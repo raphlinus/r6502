@@ -1,0 +1,6 @@
+[package]
+name = "r6502"
+version = "0.1.0"
+authors = ["Raph Levien <raph.levien@gmail.com>"]
+
+[dependencies]
