@@ -108,6 +108,47 @@ impl Cpu {
                 let a = self.a | self.read_abs(bus);
                 self.set_a_nz(a);
             }
+            0x0e => { // ASL abs
+                let (val, addr) = self.rd_wr_abs(bus);
+                let new_val = self.asl(val);
+                self.write(addr, new_val, bus);
+            }
+
+            0x10 => { // BPL rel
+                let cond = (self.flags & 0x80) == 0;
+                self.cond_branch(cond, bus);
+            }
+            0x11 => { // ORA ind,Y
+                let a = self.a | self.read_ind_y(bus);
+                self.set_a_nz(a);
+            }
+            0x15 => { // ORA zpg,X
+                let a = self.a | self.read_zp_x(bus);
+                self.set_a_nz(a);
+            }
+            0x16 => { // ASL zpg,X
+                let (val, addr) = self.rd_wr_zp_x(bus);
+                let new_val = self.asl(val);
+                self.zp_write(addr, new_val, bus);
+            }
+            0x18 => { // CLC
+                self.flags &= !0x01;
+                self.waste_cycle(bus);
+            }
+            0x19 => { // ORA abs,Y
+                let a = self.a | self.read_abs_y(bus);
+                self.set_a_nz(a);
+            }
+            0x1d => { // ORA abs,X
+                let a = self.a | self.read_abs_x(bus);
+                self.set_a_nz(a);
+            }
+            0x1e => { // ASL abs,X
+                let (val, addr) = self.rd_wr_abs_x(bus);
+                let new_val = self.asl(val);
+                self.write(addr, new_val, bus);
+            }
+
             0x8d => { // STA abs
                 let a = self.a;
                 self.write_abs(a, bus);
@@ -136,6 +177,20 @@ impl Cpu {
         self.read(addr, bus)
     }
 
+    fn cond_branch(&mut self, cond: bool, bus: &mut Bus) {
+        let rel = self.imm(bus);
+        if cond {
+            let pc = self.pc;
+            let _ = self.read(pc, bus);
+            let new_pc = pc.wrapping_add(i16::from(rel as i8) as u16);
+            let nocarry_pc = (pc & 0xff00) | (new_pc & 0xff);
+            if new_pc != nocarry_pc {
+                let _ = self.read(nocarry_pc, bus);
+            }
+            self.pc = new_pc;
+        }
+    }
+
     // Addressing modes
 
     fn waste_cycle(&mut self, bus: &mut Bus) {
@@ -150,7 +205,7 @@ impl Cpu {
         result
     }
 
-    fn abs(&mut self, bus: &mut Bus) -> u16 {
+    fn abs_addr(&mut self, bus: &mut Bus) -> u16 {
         let pc = self.pc;
         let lo = self.read(pc, bus);
         let hi = self.read(pc.wrapping_add(1), bus);
@@ -158,7 +213,7 @@ impl Cpu {
         (u16::from(hi) << 8) | u16::from(lo)
     }
 
-    fn abs_ix(&mut self, ix: u8, bus: &mut Bus) -> u16 {
+    fn abs_ix_addr(&mut self, ix: u8, bus: &mut Bus) -> u16 {
         let pc = self.pc;
         let lo = self.read(pc, bus);
         let mut hi = self.read(pc.wrapping_add(1), bus);
@@ -171,69 +226,117 @@ impl Cpu {
         (u16::from(hi) << 8) | u16::from(new_lo)
     }
 
-    fn abs_x(&mut self, bus: &mut Bus) -> u16 {
+    fn abs_x_addr(&mut self, bus: &mut Bus) -> u16 {
         let x = self.x;
-        self.abs_ix(x, bus)
+        self.abs_ix_addr(x, bus)
     }
 
-    fn abs_y(&mut self, bus: &mut Bus) -> u16 {
+    fn abs_y_addr(&mut self, bus: &mut Bus) -> u16 {
         let y = self.y;
-        self.abs_ix(y, bus)
+        self.abs_ix_addr(y, bus)
     }
 
     fn read_x_ind(&mut self, bus: &mut Bus) -> u8 {
-        let pc = self.pc;
-        let x = self.x;
-        let addr = self.read(pc, bus);
-        let _ = self.zp_read(addr);  // wasted cycle
-        let addr = addr.wrapping_add(x);
+        let addr = self.zp_x_addr(bus);
         let lo = self.zp_read(addr);
         let hi = self.zp_read(addr.wrapping_add(1));
-        let result = self.read((u16::from(hi) << 8) | u16::from(lo), bus);
-        self.pc = self.pc.wrapping_add(1);
-        result
+        self.read((u16::from(hi) << 8) | u16::from(lo), bus)
     }
 
-    fn zp(&mut self, bus: &mut Bus) -> u8 {
-        let pc = self.pc;
-        let result = self.read(pc, bus);
-        self.pc = self.pc.wrapping_add(1);
-        result
+    fn read_ind_y(&mut self, bus: &mut Bus) -> u8 {
+        let addr = self.imm(bus);
+        let lo = self.zp_read(addr);
+        let mut hi = self.zp_read(addr.wrapping_add(1));
+        let (new_lo, carry) = lo.overflowing_add(self.y);
+        if carry {
+            let _ = self.read((u16::from(hi) << 8) | u16::from(lo), bus);
+            hi += 1;
+        }
+        self.read((u16::from(hi) << 8) | u16::from(new_lo), bus)
+    }
+
+    fn zp_addr(&mut self, bus: &mut Bus) -> u8 {
+        self.imm(bus)
     }
 
     fn read_zp(&mut self, bus: &mut Bus) -> u8 {
-        let addr = self.zp(bus);
+        let addr = self.zp_addr(bus);
         self.zp_read(addr)
     }
 
-    fn read_abs(&mut self, bus: &mut Bus) -> u8 {
-        let addr = self.abs(bus);
-        self.read(addr, bus)
-    }
-
     fn rd_wr_zp(&mut self, bus: &mut Bus) -> (u8, u8) {
-        let addr = self.zp(bus);
+        let addr = self.zp_addr(bus);
         let val = self.zp_read(addr);
         self.zp_write(addr, val, bus);  // wasted cycle
         (val, addr)
     }
 
+    fn zp_x_addr(&mut self, bus: &mut Bus) -> u8 {
+        let addr = self.zp_addr(bus);
+        let _ = self.zp_read(addr);
+        addr.wrapping_add(self.x)
+    }
+
+    fn read_zp_x(&mut self, bus: &mut Bus) -> u8 {
+        let addr = self.zp_x_addr(bus);
+        self.zp_read(addr)
+    }
+
+    fn rd_wr_zp_x(&mut self, bus: &mut Bus) -> (u8, u8) {
+        let addr = self.zp_x_addr(bus);
+        let val = self.zp_read(addr);
+        self.zp_write(addr, val, bus);  // wasted cycle
+        (val, addr)
+    }
+
+    fn read_abs(&mut self, bus: &mut Bus) -> u8 {
+        let addr = self.abs_addr(bus);
+        self.read(addr, bus)
+    }
+
     fn write_abs(&mut self, val: u8, bus: &mut Bus) {
-        let addr = self.abs(bus);
+        let addr = self.abs_addr(bus);
         self.write(addr, val, bus);
+    }
+
+    fn rd_wr_abs(&mut self, bus: &mut Bus) -> (u8, u16) {
+        let addr = self.abs_addr(bus);
+        let val = self.read(addr, bus);
+        self.write(addr, val, bus);  // wasted cycle
+        (val, addr)
+    }
+
+    fn read_abs_x(&mut self, bus: &mut Bus) -> u8 {
+        let addr = self.abs_x_addr(bus);
+        self.read(addr, bus)
+    }
+
+    fn rd_wr_abs_x(&mut self, bus: &mut Bus) -> (u8, u16) {
+        let addr = self.abs_addr(bus);
+        let new_addr = addr.wrapping_add(u16::from(self.x));
+        let addr_no_carry = (addr & 0xff00) | (new_addr & 0xff);
+        let _ = self.read(addr_no_carry, bus);
+        let val = self.read(new_addr, bus);
+        self.write(addr, val, bus);  // wasted cycle
+        (val, addr)
+    }
+
+    fn read_abs_y(&mut self, bus: &mut Bus) -> u8 {
+        let addr = self.abs_y_addr(bus);
+        self.read(addr, bus)
     }
 
     fn set_a_nz(&mut self, a: u8) {
         self.a = a;
-        self.flags = (self.flags & 0x3f) | (a & 0x80) | if a == 0 { 0x40 } else { 0 };
+        self.flags = (self.flags & 0x7d) | (a & 0x80) | if a == 0 { 2 } else { 0 };
     }
 
     // calculations
     fn asl(&mut self, val: u8) -> u8 {
-        let c = (val & 0x80) >> 2;
+        let c = (val & 0x80) >> 7;
         let new_val = val.wrapping_shl(1);
-        self.flags = (self.flags & 0x1f) | (new_val & 0x80) | c
-            | if new_val == 0 { 0x40 } else { 0 };
+        self.flags = (self.flags & 0x7d) | (new_val & 0x80) | c
+            | if new_val == 0 { 2 } else { 0 };
         new_val
     }
 }
