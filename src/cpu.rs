@@ -31,7 +31,7 @@ impl Cpu {
             x: 0,
             y: 0,
             pc: 0,
-            flags: 0,
+            flags: 0x30,
             sp: 0,
 
             mem: [0; 65536],
@@ -44,6 +44,11 @@ impl Cpu {
     pub fn set_masks(&mut self, rd_mask: u64, wr_mask: u64) {
         self.rd_mask = rd_mask;
         self.wr_mask = wr_mask;
+    }
+
+    pub fn print_state(&self) {
+        println!("a {:02x} x {:02x} y {:02x} s {:02x} p {:02x} pc {:04x}",
+            self.a, self.x, self.y, self.sp, self.flags, self.pc);
     }
 
     fn read(&mut self, addr: u16, bus: &mut Bus) -> u8 {
@@ -173,7 +178,7 @@ impl Cpu {
                 self.zp_write(addr, new_val, bus);
             }
             0x28 => { // PLP
-                self.flags = self.pull(bus);
+                self.flags = self.pull(bus) | 0x30;
             }
             0x29 => { // AND #
                 let a = self.a & self.imm(bus);
@@ -233,13 +238,155 @@ impl Cpu {
                 self.write(addr, new_val, bus);
             }
 
+            0x48 => { // PHA
+                let a = self.a;
+                self.push(a, bus);
+            }
+            0x49 => { // EOR #
+                let a = self.a ^ self.imm(bus);
+                self.set_a_nz(a);
+            }
+            0x4c => { // JMP abs
+                let addr = self.abs_addr(bus);
+                self.pc = addr;
+            }
+
+            0x50 => { // BVC rel
+                let cond = (self.flags & 0x40) == 0;
+                self.cond_branch(cond, bus);
+            }
+
+            0x68 => { // PLA
+                let a = self.pull(bus);
+                self.set_a_nz(a);
+            }
+            0x69 => { // ADC #
+                let val = self.imm(bus);
+                self.adc(val);
+            }
+
+            0x70 => { // BVS rel
+                let cond = (self.flags & 0x40) != 0;
+                self.cond_branch(cond, bus);
+            }
+
+            0x88 => { // DEY
+                let y = self.y.wrapping_sub(1);
+                self.set_y_nz(y);
+                self.waste_cycle(bus);
+            }
+            0x8a => { // TXA
+                let x = self.x;
+                self.set_a_nz(x);
+                self.waste_cycle(bus);
+            }
             0x8d => { // STA abs
                 let a = self.a;
                 self.write_abs(a, bus);
             }
+
+            0x90 => { // BCC rel
+                let cond = (self.flags & 0x01) == 0;
+                self.cond_branch(cond, bus);
+            }
+            0x98 => { // TYA
+                let y = self.y;
+                self.set_a_nz(y);
+                self.waste_cycle(bus);
+            }
+            0x9a => { // TXS
+                self.sp = self.x;
+                self.waste_cycle(bus);
+            }
+
+            0xa0 => { // LDY #
+                let y = self.imm(bus);
+                self.set_y_nz(y);
+            }
+            0xa2 => { // LDX #
+                let x = self.imm(bus);
+                self.set_x_nz(x);
+            }
+            0xa8 => { // TAY
+                let a = self.a;
+                self.set_y_nz(a);
+                self.waste_cycle(bus);
+            }
             0xa9 => { // LDA #
                 let a = self.imm(bus);
                 self.set_a_nz(a);
+            }
+            0xaa => { // TAX
+                let a = self.a;
+                self.set_x_nz(a);
+                self.waste_cycle(bus);
+            }
+            0xad => { // LDA abs
+                let a = self.read_abs(bus);
+                self.set_a_nz(a);
+            }
+
+            0xb0 => { // BCS rel
+                let cond = (self.flags & 0x01) != 0;
+                self.cond_branch(cond, bus);
+            }
+            0xba => { // TSX
+                self.x = self.sp;
+                self.waste_cycle(bus);
+            }
+
+            0xc0 => { // CPY #
+                let y = self.y;
+                let rhs = self.imm(bus);
+                self.cmp(y, rhs);
+            }
+            0xc8 => { // INY
+                let y = self.y.wrapping_add(1);
+                self.set_y_nz(y);
+                self.waste_cycle(bus);
+            }
+            0xc9 => { // CMP #
+                let a = self.a;
+                let rhs = self.imm(bus);
+                self.cmp(a, rhs);
+            }
+            0xca => { // DEX
+                let x = self.x.wrapping_sub(1);
+                self.set_x_nz(x);
+                self.waste_cycle(bus);
+            }
+            0xcd => { // CMP abs
+                let a = self.a;
+                let rhs = self.read_abs(bus);
+                self.cmp(a, rhs);
+            }
+
+            0xd0 => { // BNE rel
+                let cond = (self.flags & 0x02) == 0;
+                self.cond_branch(cond, bus);
+            }
+            0xd8 => { // CLD
+                self.flags &= !0x08;
+                self.waste_cycle(bus);
+            }
+
+            0xe0 => { // CPX #
+                let x = self.x;
+                let rhs = self.imm(bus);
+                self.cmp(x, rhs);
+            }
+            0xe8 => { // INX
+                let x = self.x.wrapping_add(1);
+                self.set_x_nz(x);
+                self.waste_cycle(bus);
+            }
+            0xea => { // NOP
+                self.waste_cycle(bus);
+            }
+
+            0xf0 => { // BEQ rel
+                let cond = (self.flags & 0x02) != 0;
+                self.cond_branch(cond, bus);
             }
             _ => println!("unimpl ins {:02x}", ins),
         }
@@ -428,9 +575,23 @@ impl Cpu {
     }
 
 
-    fn set_a_nz(&mut self, a: u8) {
-        self.a = a;
+    fn set_nz(&mut self, a: u8) {
         self.flags = (self.flags & 0x7d) | (a & 0x80) | if a == 0 { 2 } else { 0 };
+    }
+
+    fn set_a_nz(&mut self, val: u8) {
+        self.a = val;
+        self.set_nz(val);
+    }
+
+    fn set_x_nz(&mut self, val: u8) {
+        self.x = val;
+        self.set_nz(val);
+    }
+
+    fn set_y_nz(&mut self, val: u8) {
+        self.y = val;
+        self.set_nz(val);
     }
 
     // Calculations
@@ -456,4 +617,23 @@ impl Cpu {
         new_val
     }
 
+    fn adc(&mut self, val: u8) {
+        // TODO: decimal mode
+        let a = u16::from(self.a);
+        let sum = a + u16::from(val) + u16::from(self.flags & 1);
+        let c = (sum >> 8) as u8;
+        let sum = sum as u8;
+        let v = ((self.a ^ val) & (self.a ^ sum) & 0x80) >> 1;
+        self.flags = (self.flags & 0x3c) | (sum & 0x80) | c | v
+            | if sum == 0 { 2 } else { 0 };
+        self.a = sum;
+    }
+
+    fn cmp(&mut self, lhs: u8, rhs: u8) {
+        let sum = u16::from(lhs) + u16::from(!rhs) + 1;
+        let c = (sum >> 8) as u8;
+        let sum = sum as u8;
+        self.flags = (self.flags & 0x7c) | (sum & 0x80) | c
+            | if sum == 0 { 2 } else { 0 };
+    }
 }

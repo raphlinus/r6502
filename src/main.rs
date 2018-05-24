@@ -35,5 +35,12 @@ fn main() {
     cpu.pc = 0x400;
     cpu.set_masks(!0, !0);
     let mut debug_bus = DebugBus;
-    cpu.step(&mut debug_bus);
+    loop {
+        cpu.print_state();
+        let pc = cpu.pc;
+        cpu.step(&mut debug_bus);
+        if pc == cpu.pc {
+            break;
+        }
+    }
 }
