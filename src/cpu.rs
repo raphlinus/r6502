@@ -2,30 +2,30 @@
 pub struct Cpu {
     // Processor registers
 
-    a: u8,
-    x: u8,
-    y: u8,
-    pc: u16,
-    flags: u8,
-    sp: u8,
+    pub a: u8,
+    pub x: u8,
+    pub y: u8,
+    pub pc: u16,
+    pub flags: u8,
+    pub sp: u8,
 
     // Other processor state
 
-    mem: [u8; 65536],
-    cycle: usize,
+    pub mem: [u8; 65536],
+    pub cycle: usize,
 
     rd_mask: u64,
     wr_mask: u64,
 }
 
 pub trait Bus {
-    fn read(&mut self, addr: u16, cycle: usize) -> u8;
+    fn read(&mut self, addr: u16, cpu: &mut Cpu) -> u8;
 
-    fn write(&mut self, addr: u16, val: u8, cycle: usize);
+    fn write(&mut self, addr: u16, val: u8, cpu: &mut Cpu);
 }
 
 impl Cpu {
-    fn new() -> Cpu {
+    pub fn new() -> Cpu {
         Cpu {
             a: 0,
             x: 0,
@@ -41,10 +41,14 @@ impl Cpu {
         }
     }
 
+    pub fn set_masks(&mut self, rd_mask: u64, wr_mask: u64) {
+        self.rd_mask = rd_mask;
+        self.wr_mask = wr_mask;
+    }
+
     fn read(&mut self, addr: u16, bus: &mut Bus) -> u8 {
         let result = if self.rd_mask & (1 << (addr >> 10)) != 0 {
-            let cycle =  self.cycle;
-            bus.read(addr, cycle)
+            bus.read(addr, self)
         } else {
             self.mem[addr as usize]
         };
@@ -60,8 +64,7 @@ impl Cpu {
 
     fn write(&mut self, addr: u16, val: u8, bus: &mut Bus) {
         if self.wr_mask & (1 << (addr >> 10)) != 0 {
-            let cycle = self.cycle;
-            bus.write(addr, val, cycle)
+            bus.write(addr, val, self)
         } else {
             self.mem[addr as usize] = val;
         }
@@ -73,7 +76,7 @@ impl Cpu {
         self.write(u16::from(addr), val, bus);
     }
 
-    fn step(&mut self, bus: &mut Bus) {
+    pub fn step(&mut self, bus: &mut Bus) {
         let pc = self.pc;
         let ins = self.read(pc, bus);
         self.pc = self.pc.wrapping_add(1);
@@ -149,6 +152,87 @@ impl Cpu {
                 self.write(addr, new_val, bus);
             }
 
+            0x20 => { // JSR abs
+                self.jsr(bus);
+            }
+            0x21 => { // AND X,ind
+                let a = self.a & self.read_x_ind(bus);
+                self.set_a_nz(a);
+            }
+            0x24 => { // BIT zpg
+                let val = self.read_zp(bus);
+                self.bit(val);
+            }
+            0x25 => { // AND zpg
+                let a = self.a & self.read_zp(bus);
+                self.set_a_nz(a);
+            }
+            0x26 => { // ROL zpg
+                let (val, addr) = self.rd_wr_zp(bus);
+                let new_val = self.rol(val);
+                self.zp_write(addr, new_val, bus);
+            }
+            0x28 => { // PLP
+                self.flags = self.pull(bus);
+            }
+            0x29 => { // AND #
+                let a = self.a & self.imm(bus);
+                self.set_a_nz(a);
+            }
+            0x2a => { // ROL A
+                let a = self.a;
+                let new_val = self.rol(a);
+                self.set_a_nz(new_val);
+            }
+            0x2c => { // BIT abs
+                let val = self.read_abs(bus);
+                self.bit(val);
+            }
+            0x2d => { // AND abs
+                let a = self.a & self.read_abs(bus);
+                self.set_a_nz(a);
+            }
+            0x2e => { // ROL abs
+                let (val, addr) = self.rd_wr_abs(bus);
+                let new_val = self.rol(val);
+                self.write(addr, new_val, bus);
+            }
+
+            0x30 => { // BMI rel
+                let cond = (self.flags & 0x80) != 0;
+                self.cond_branch(cond, bus);
+            }
+            0x31 => { // AND ind,Y
+                let a = self.a & self.read_ind_y(bus);
+                self.set_a_nz(a);
+            }
+            0x35 => { // AND zpg,X
+                let a = self.a & self.read_zp_x(bus);
+                self.set_a_nz(a);
+            }
+            0x36 => { // ROL zpg,X
+                let (val, addr) = self.rd_wr_zp_x(bus);
+                let new_val = self.rol(val);
+                self.zp_write(addr, new_val, bus);
+            }
+            0x38 => { // SEC
+                self.flags |= 0x01;
+                self.waste_cycle(bus);
+            }
+            0x39 => { // AND abs,Y
+                let a = self.a & self.read_abs_y(bus);
+                self.set_a_nz(a);
+            }
+            0x3d => { // AND abs,X
+                let a = self.a & self.read_abs_x(bus);
+                self.set_a_nz(a);
+            }
+            0x3e => { // ROL abs,X
+                let (val, addr) = self.rd_wr_abs_x(bus);
+                let new_val = self.rol(val);
+                self.write(addr, new_val, bus);
+            }
+
             0x8d => { // STA abs
                 let a = self.a;
                 self.write_abs(a, bus);
@@ -189,6 +273,23 @@ impl Cpu {
             }
             self.pc = new_pc;
         }
+    }
+
+    // More complex instructions
+
+    fn jsr(&mut self, bus: &mut Bus) {
+        let target_lo = self.imm(bus);
+        let addr = 0x100 | u16::from(self.sp);
+        let _ = self.read(addr, bus);
+        let hi = (self.pc >> 8) as u8;
+        self.write(addr, hi, bus);
+        self.sp = self.sp.wrapping_sub(1);
+        let addr = 0x100 | u16::from(self.sp);
+        let lo = self.pc as u8;
+        self.write(addr, lo, bus);
+        self.sp = self.sp.wrapping_sub(1);
+        let target_hi = self.imm(bus);
+        self.pc = (u16::from(target_hi) << 8) | u16::from(target_lo);
     }
 
     // Addressing modes
@@ -326,17 +427,33 @@ impl Cpu {
         self.read(addr, bus)
     }
 
+
     fn set_a_nz(&mut self, a: u8) {
         self.a = a;
         self.flags = (self.flags & 0x7d) | (a & 0x80) | if a == 0 { 2 } else { 0 };
     }
 
-    // calculations
+    // Calculations
+
     fn asl(&mut self, val: u8) -> u8 {
         let c = (val & 0x80) >> 7;
         let new_val = val.wrapping_shl(1);
-        self.flags = (self.flags & 0x7d) | (new_val & 0x80) | c
+        self.flags = (self.flags & 0x7c) | (new_val & 0x80) | c
             | if new_val == 0 { 2 } else { 0 };
         new_val
     }
+
+    fn bit(&mut self, val: u8) {
+        self.flags = (self.flags & 0x3d) | (val & 0xc0)
+            | if val & self.a == 0 { 2 } else { 0 };
+    }
+
+    fn rol(&mut self, val: u8) -> u8 {
+        let c = (val & 0x80) >> 7;
+        let new_val = val.wrapping_shl(1) | (self.flags & 1);
+        self.flags = (self.flags & 0x7c) | (new_val & 0x80) | c
+            | if new_val == 0 { 2 } else { 0 };
+        new_val
+    }
+
 }
