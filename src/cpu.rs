@@ -1120,20 +1120,66 @@ impl Cpu {
     }
 
     fn adc(&mut self, val: u8) {
-        // TODO: decimal mode
-        let a = u16::from(self.a);
-        let sum = a + u16::from(val) + u16::from(self.flags & 1);
-        let c = (sum >> 8) as u8;
-        let sum = sum as u8;
-        let v = (!(self.a ^ val) & (self.a ^ sum) & 0x80) >> 1;
-        self.flags = (self.flags & 0x3c) | (sum & 0x80) | c | v
-            | if sum == 0 { 2 } else { 0 };
-        self.a = sum;
+        if self.flags & 8 != 0 {
+            // decimal mode
+            let a = u16::from(self.a);
+            let mut sum = a + u16::from(val) + u16::from(self.flags & 1);
+            let z = if (sum & 0xff) == 0 { 2 } else { 0 };
+            let al = (self.a & 0xf) + (val & 0xf) + (self.flags & 1);
+            if al >= 0xa {
+                sum += u16::from(((al + 6) & 0xf) + 0x10);
+                sum -= u16::from(al);
+            }
+            let n = (sum as u8) & 0x80;
+            let v = (!(self.a ^ val) & (self.a ^ (sum as u8)) & 0x80) >> 1;
+            let mut c = 0;
+            if sum >= 0xa0 {
+                sum += 0x60;
+                c = 1;
+            }
+            self.flags = (self.flags & 0x3c) | n | v | z | c;
+            //println!("decimal {:02x} + {:02x} = {:02x}", self.a, val, sum);
+            self.a = sum as u8;
+        } else {
+            let a = u16::from(self.a);
+            let sum = a + u16::from(val) + u16::from(self.flags & 1);
+            let c = (sum >> 8) as u8;
+            let sum = sum as u8;
+            let v = (!(self.a ^ val) & (self.a ^ sum) & 0x80) >> 1;
+            self.flags = (self.flags & 0x3c) | (sum & 0x80) | c | v
+                | if sum == 0 { 2 } else { 0 };
+            self.a = sum;
+        }
     }
 
     fn sbc(&mut self, val: u8) {
-        // TODO: decimal mode
-        self.adc(!val)
+        if self.flags & 8 != 0 {
+            // decimal mode
+            let c_in = self.flags & 1;
+
+            // set flags based on binary computation
+            let sum = u16::from(self.a) + u16::from(!val) + u16::from(c_in);
+            let c = (sum >> 8) as u8;
+            let sum = sum as u8;
+            let v = (!(self.a ^ !val) & (self.a ^ sum) & 0x80) >> 1;
+            self.flags = (self.flags & 0x3c) | (sum & 0x80) | c | v
+                | if sum == 0 { 2 } else { 0 };
+
+            // do decimal calculation (this follows decimal mode tutorial)
+            let mut al = i16::from(self.a & 0xf) - i16::from(val & 0xf)
+                + i16::from(c_in) - 1;
+            if al < 0 {
+                al = ((al - 6) & 0xf) - 0x10;
+            }
+            let mut a = i16::from(self.a & 0xf0) - i16::from(val & 0xf0) + al;
+            if a < 0 {
+                a -= 0x60;
+            }
+            self.a = a as u8;
+
+        } else {
+            self.adc(!val)
+        }
     }
 
     fn cmp(&mut self, lhs: u8, rhs: u8) {
