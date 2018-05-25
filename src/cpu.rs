@@ -61,10 +61,13 @@ impl Cpu {
         result
     }
 
-    fn zp_read(&mut self, addr: u8) -> u8 {
+    fn zp_read(&mut self, addr: u8, bus: &mut Bus) -> u8 {
+        /*
         let result = self.mem[usize::from(addr)];
         self.cycle += 1;
         result
+        */
+        self.read(u16::from(addr), bus)
     }
 
     fn write(&mut self, addr: u16, val: u8, bus: &mut Bus) {
@@ -113,7 +116,7 @@ impl Cpu {
             0x0a => { // ASL A
                 let a = self.a;
                 let new_val = self.asl(a);
-                self.set_a_nz(new_val);
+                self.a = new_val;
             }
             0x0d => { // ORA abs
                 let a = self.a | self.read_abs(bus);
@@ -190,7 +193,7 @@ impl Cpu {
             0x2a => { // ROL A
                 let a = self.a;
                 let new_val = self.rol(a);
-                self.set_a_nz(new_val);
+                self.a = new_val;
             }
             0x2c => { // BIT abs
                 let val = self.read_abs(bus);
@@ -244,6 +247,19 @@ impl Cpu {
             0x40 => { // RTI
                 self.rti(bus);
             }
+            0x41 => { // EOR X,ind
+                let a = self.a ^ self.read_x_ind(bus);
+                self.set_a_nz(a);
+            }
+            0x45 => { // EOR zpg
+                let a = self.a ^ self.read_zp(bus);
+                self.set_a_nz(a);
+            }
+            0x46 => { // LSR zpg
+                let (val, addr) = self.rd_wr_zp(bus);
+                let new_val = self.lsr(val);
+                self.zp_write(addr, new_val, bus);
+            }
             0x48 => { // PHA
                 let a = self.a;
                 self.push(a, bus);
@@ -252,22 +268,75 @@ impl Cpu {
                 let a = self.a ^ self.imm(bus);
                 self.set_a_nz(a);
             }
+            0x4a => { // LSR A
+                let a = self.a;
+                let new_val = self.lsr(a);
+                self.a = new_val;
+            }
             0x4c => { // JMP abs
                 let addr = self.abs_addr(bus);
                 self.pc = addr;
+            }
+            0x4d => { // EOR abs
+                let a = self.a ^ self.read_abs(bus);
+                self.set_a_nz(a);
+            }
+            0x4e => { // LSR abs
+                let (val, addr) = self.rd_wr_abs(bus);
+                let new_val = self.lsr(val);
+                self.write(addr, new_val, bus);
             }
 
             0x50 => { // BVC rel
                 let cond = (self.flags & 0x40) == 0;
                 self.cond_branch(cond, bus);
             }
+            0x51 => { // EOR ind,Y
+                let a = self.a ^ self.read_ind_y(bus);
+                self.set_a_nz(a);
+            }
+            0x55 => { // EOR zpg,X
+                let a = self.a ^ self.read_zp_x(bus);
+                self.set_a_nz(a);
+            }
+            0x56 => { // LSR zpg,X
+                let (val, addr) = self.rd_wr_zp_x(bus);
+                let new_val = self.lsr(val);
+                self.zp_write(addr, new_val, bus);
+            }
             0x58 => { // CLI
                 self.flags &= !0x04;
                 self.waste_cycle(bus);
             }
+            0x59 => { // EOR abs,Y
+                let a = self.a ^ self.read_abs_y(bus);
+                self.set_a_nz(a);
+            }
+            0x5d => { // EOR abs,X
+                let a = self.a ^ self.read_abs_x(bus);
+                self.set_a_nz(a);
+            }
+            0x5e => { // LSR abs,X
+                let (val, addr) = self.rd_wr_abs_x(bus);
+                let new_val = self.lsr(val);
+                self.write(addr, new_val, bus);
+            }
 
             0x60 => { // RTS
                 self.rts(bus);
+            }
+            0x61 => { // ADC X,ind
+                let val = self.read_x_ind(bus);
+                self.adc(val);
+            }
+            0x65 => { // ADC zpg
+                let val = self.read_zp(bus);
+                self.adc(val);
+            }
+            0x66 => { // ROR zpg
+                let (val, addr) = self.rd_wr_zp(bus);
+                let new_val = self.ror(val);
+                self.zp_write(addr, new_val, bus);
             }
             0x68 => { // PLA
                 let a = self.pull(bus);
@@ -277,20 +346,60 @@ impl Cpu {
                 let val = self.imm(bus);
                 self.adc(val);
             }
+            0x6a => { // ROR A
+                let a = self.a;
+                let new_val = self.ror(a);
+                self.set_a_nz(new_val);
+            }
             0x6c => { // JMP ind
                 let addr = self.abs_addr(bus);
                 let lo = self.read(addr, bus);
                 let hi = self.read(addr.wrapping_add(1), bus);
                 self.pc = (u16::from(hi) << 8) | u16::from(lo);
             }
+            0x6d => { // ADC abs
+                let val = self.read_abs(bus);
+                self.adc(val);
+            }
+            0x6e => { // ROR abs
+                let (val, addr) = self.rd_wr_abs(bus);
+                let new_val = self.ror(val);
+                self.write(addr, new_val, bus);
+            }
 
             0x70 => { // BVS rel
                 let cond = (self.flags & 0x40) != 0;
                 self.cond_branch(cond, bus);
             }
+            0x71 => { // ADC X,ind,Y
+                let val = self.read_ind_y(bus);
+                self.adc(val);
+            }
+            0x75 => { // ADC zpg,X
+                let val = self.read_zp_x(bus);
+                self.adc(val);
+            }
+            0x76 => { // ROR zpg,X
+                let (val, addr) = self.rd_wr_zp_x(bus);
+                let new_val = self.ror(val);
+                self.zp_write(addr, new_val, bus);
+            }
             0x78 => { // SEI
                 self.flags |= 0x04;
                 self.waste_cycle(bus);
+            }
+            0x79 => { // ADC abs,Y
+                let val = self.read_abs_y(bus);
+                self.adc(val);
+            }
+            0x7d => { // ADC abs,X
+                let val = self.read_abs_x(bus);
+                self.adc(val);
+            }
+            0x7e => { // ROR abs,X
+                let (val, addr) = self.rd_wr_abs_x(bus);
+                let new_val = self.ror(val);
+                self.write(addr, new_val, bus);
             }
 
             0x81 => { // STA X,ind
@@ -487,6 +596,12 @@ impl Cpu {
                 let rhs = self.read_zp(bus);
                 self.cmp(a, rhs);
             }
+            0xc6 => { // DEC zpg
+                let (val, addr) = self.rd_wr_zp(bus);
+                let val = val.wrapping_sub(1);
+                self.zp_write(addr, val, bus);
+                self.set_nz(val);
+            }
             0xc8 => { // INY
                 let y = self.y.wrapping_add(1);
                 self.set_y_nz(y);
@@ -512,6 +627,12 @@ impl Cpu {
                 let rhs = self.read_abs(bus);
                 self.cmp(a, rhs);
             }
+            0xce => { // DEC abs
+                let (val, addr) = self.rd_wr_abs(bus);
+                let val = val.wrapping_sub(1);
+                self.write(addr, val, bus);
+                self.set_nz(val);
+            }
 
             0xd0 => { // BNE rel
                 let cond = (self.flags & 0x02) == 0;
@@ -527,6 +648,12 @@ impl Cpu {
                 let rhs = self.read_zp_x(bus);
                 self.cmp(a, rhs);
             }
+            0xd6 => { // DEC zpg,X
+                let (val, addr) = self.rd_wr_zp_x(bus);
+                let val = val.wrapping_sub(1);
+                self.zp_write(addr, val, bus);
+                self.set_nz(val);
+            }
             0xd8 => { // CLD
                 self.flags &= !0x08;
                 self.waste_cycle(bus);
@@ -541,21 +668,45 @@ impl Cpu {
                 let rhs = self.read_abs_x(bus);
                 self.cmp(a, rhs);
             }
+            0xde => { // DEC abs,X
+                let (val, addr) = self.rd_wr_abs_x(bus);
+                let val = val.wrapping_sub(1);
+                self.write(addr, val, bus);
+                self.set_nz(val);
+            }
 
             0xe0 => { // CPX #
                 let x = self.x;
                 let rhs = self.imm(bus);
                 self.cmp(x, rhs);
             }
+            0xe1 => { // SBC X,ind
+                let val = self.read_x_ind(bus);
+                self.sbc(val);
+            }
             0xe4 => { // CPX zpg
                 let x = self.x;
                 let rhs = self.read_zp(bus);
                 self.cmp(x, rhs);
             }
+            0xe5 => { // SBC zpg
+                let val = self.read_zp(bus);
+                self.sbc(val);
+            }
+            0xe6 => { // INC zpg
+                let (val, addr) = self.rd_wr_zp(bus);
+                let val = val.wrapping_add(1);
+                self.zp_write(addr, val, bus);
+                self.set_nz(val);
+            }
             0xe8 => { // INX
                 let x = self.x.wrapping_add(1);
                 self.set_x_nz(x);
                 self.waste_cycle(bus);
+            }
+            0xe9 => { // SBC #
+                let val = self.imm(bus);
+                self.sbc(val);
             }
             0xea => { // NOP
                 self.waste_cycle(bus);
@@ -565,15 +716,54 @@ impl Cpu {
                 let rhs = self.read_abs(bus);
                 self.cmp(x, rhs);
             }
+            0xed => { // SBC abs
+                let val = self.read_abs(bus);
+                self.sbc(val);
+            }
+            0xee => { // INC abs
+                let (val, addr) = self.rd_wr_abs(bus);
+                let val = val.wrapping_add(1);
+                self.write(addr, val, bus);
+                self.set_nz(val);
+            }
 
             0xf0 => { // BEQ rel
                 let cond = (self.flags & 0x02) != 0;
                 self.cond_branch(cond, bus);
             }
+            0xf1 => { // SBC X,ind,Y
+                let val = self.read_ind_y(bus);
+                self.sbc(val);
+            }
+            0xf5 => { // SBC zpg,X
+                let val = self.read_zp_x(bus);
+                self.sbc(val);
+            }
+            0xf6 => { // INC zpg,X
+                let (val, addr) = self.rd_wr_zp_x(bus);
+                let val = val.wrapping_add(1);
+                self.zp_write(addr, val, bus);
+                self.set_nz(val);
+            }
             0xf8 => { // SED
                 self.flags |= 0x08;
                 self.waste_cycle(bus);
             }
+            0xf9 => { // SBC abs,Y
+                let val = self.read_abs_y(bus);
+                self.sbc(val);
+            }
+            0xfd => { // SBC abs,X
+                let val = self.read_abs_x(bus);
+                self.sbc(val);
+            }
+            0xfe => { // INC abs,X
+                let (val, addr) = self.rd_wr_abs_x(bus);
+                let val = val.wrapping_add(1);
+                self.write(addr, val, bus);
+                self.set_nz(val);
+            }
+
             _ => println!("unimpl ins {:02x}", ins),
         }
     }
@@ -719,22 +909,22 @@ impl Cpu {
 
     fn read_x_ind(&mut self, bus: &mut Bus) -> u8 {
         let addr = self.zp_x_addr(bus);
-        let lo = self.zp_read(addr);
-        let hi = self.zp_read(addr.wrapping_add(1));
+        let lo = self.zp_read(addr, bus);
+        let hi = self.zp_read(addr.wrapping_add(1), bus);
         self.read((u16::from(hi) << 8) | u16::from(lo), bus)
     }
 
     fn write_x_ind(&mut self, val: u8, bus: &mut Bus) {
         let addr = self.zp_x_addr(bus);
-        let lo = self.zp_read(addr);
-        let hi = self.zp_read(addr.wrapping_add(1));
+        let lo = self.zp_read(addr, bus);
+        let hi = self.zp_read(addr.wrapping_add(1), bus);
         self.write((u16::from(hi) << 8) | u16::from(lo), val, bus);
     }
 
     fn ind_y_addr(&mut self, bus: &mut Bus) -> (u16, u16) {
         let addr = self.imm(bus);
-        let lo = self.zp_read(addr);
-        let hi = self.zp_read(addr.wrapping_add(1));
+        let lo = self.zp_read(addr, bus);
+        let hi = self.zp_read(addr.wrapping_add(1), bus);
         let addr = (u16::from(hi) << 8) | u16::from(lo);
         let new_addr = addr.wrapping_add(u16::from(self.y));
         let addr_no_carry = (addr & 0xff00) | (new_addr & 0xff);
@@ -761,7 +951,7 @@ impl Cpu {
 
     fn read_zp(&mut self, bus: &mut Bus) -> u8 {
         let addr = self.zp_addr(bus);
-        self.zp_read(addr)
+        self.zp_read(addr, bus)
     }
 
     fn write_zp(&mut self, val: u8, bus: &mut Bus) {
@@ -771,20 +961,20 @@ impl Cpu {
 
     fn rd_wr_zp(&mut self, bus: &mut Bus) -> (u8, u8) {
         let addr = self.zp_addr(bus);
-        let val = self.zp_read(addr);
+        let val = self.zp_read(addr, bus);
         self.zp_write(addr, val, bus);  // wasted cycle
         (val, addr)
     }
 
     fn zp_x_addr(&mut self, bus: &mut Bus) -> u8 {
         let addr = self.zp_addr(bus);
-        let _ = self.zp_read(addr);
+        let _ = self.zp_read(addr, bus);
         addr.wrapping_add(self.x)
     }
 
     fn read_zp_x(&mut self, bus: &mut Bus) -> u8 {
         let addr = self.zp_x_addr(bus);
-        self.zp_read(addr)
+        self.zp_read(addr, bus)
     }
 
     fn write_zp_x(&mut self, val: u8, bus: &mut Bus) {
@@ -794,20 +984,20 @@ impl Cpu {
 
     fn rd_wr_zp_x(&mut self, bus: &mut Bus) -> (u8, u8) {
         let addr = self.zp_x_addr(bus);
-        let val = self.zp_read(addr);
+        let val = self.zp_read(addr, bus);
         self.zp_write(addr, val, bus);  // wasted cycle
         (val, addr)
     }
 
     fn zp_y_addr(&mut self, bus: &mut Bus) -> u8 {
         let addr = self.zp_addr(bus);
-        let _ = self.zp_read(addr);
+        let _ = self.zp_read(addr, bus);
         addr.wrapping_add(self.y)
     }
 
     fn read_zp_y(&mut self, bus: &mut Bus) -> u8 {
         let addr = self.zp_y_addr(bus);
-        self.zp_read(addr)
+        self.zp_read(addr, bus)
     }
 
     fn write_zp_y(&mut self, val: u8, bus: &mut Bus) {
@@ -861,8 +1051,8 @@ impl Cpu {
         let addr_no_carry = (addr & 0xff00) | (new_addr & 0xff);
         let _ = self.read(addr_no_carry, bus);
         let val = self.read(new_addr, bus);
-        self.write(addr, val, bus);  // wasted cycle
-        (val, addr)
+        self.write(new_addr, val, bus);  // wasted cycle
+        (val, new_addr)
     }
 
     fn read_abs_y(&mut self, bus: &mut Bus) -> u8 {
@@ -913,16 +1103,37 @@ impl Cpu {
         new_val
     }
 
+    fn lsr(&mut self, val: u8) -> u8 {
+        let c = val & 1;
+        let new_val = val >> 1;
+        self.flags = (self.flags & 0x7c) | (new_val & 0x80) | c
+            | if new_val == 0 { 2 } else { 0 };
+        new_val
+    }
+
+    fn ror(&mut self, val: u8) -> u8 {
+        let c = val & 1;
+        let new_val = (val >> 1) | ((self.flags & 1) << 7);
+        self.flags = (self.flags & 0x7c) | (new_val & 0x80) | c
+            | if new_val == 0 { 2 } else { 0 };
+        new_val
+    }
+
     fn adc(&mut self, val: u8) {
         // TODO: decimal mode
         let a = u16::from(self.a);
         let sum = a + u16::from(val) + u16::from(self.flags & 1);
         let c = (sum >> 8) as u8;
         let sum = sum as u8;
-        let v = ((self.a ^ val) & (self.a ^ sum) & 0x80) >> 1;
+        let v = (!(self.a ^ val) & (self.a ^ sum) & 0x80) >> 1;
         self.flags = (self.flags & 0x3c) | (sum & 0x80) | c | v
             | if sum == 0 { 2 } else { 0 };
         self.a = sum;
+    }
+
+    fn sbc(&mut self, val: u8) {
+        // TODO: decimal mode
+        self.adc(!val)
     }
 
     fn cmp(&mut self, lhs: u8, rhs: u8) {
