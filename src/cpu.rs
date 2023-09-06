@@ -51,7 +51,7 @@ impl Cpu {
             self.a, self.x, self.y, self.sp, self.flags, self.pc);
     }
 
-    fn read(&mut self, addr: u16, bus: &mut Bus) -> u8 {
+    fn read(&mut self, addr: u16, bus: &mut dyn Bus) -> u8 {
         let result = if self.rd_mask & (1 << (addr >> 10)) != 0 {
             bus.read(addr, self)
         } else {
@@ -61,7 +61,7 @@ impl Cpu {
         result
     }
 
-    fn zp_read(&mut self, addr: u8, bus: &mut Bus) -> u8 {
+    fn zp_read(&mut self, addr: u8, bus: &mut dyn Bus) -> u8 {
         /*
         let result = self.mem[usize::from(addr)];
         self.cycle += 1;
@@ -70,7 +70,7 @@ impl Cpu {
         self.read(u16::from(addr), bus)
     }
 
-    fn write(&mut self, addr: u16, val: u8, bus: &mut Bus) {
+    fn write(&mut self, addr: u16, val: u8, bus: &mut dyn Bus) {
         if self.wr_mask & (1 << (addr >> 10)) != 0 {
             bus.write(addr, val, self)
         } else {
@@ -79,12 +79,12 @@ impl Cpu {
         self.cycle += 1;
     }
 
-    fn zp_write(&mut self, addr: u8, val: u8, bus: &mut Bus) {
+    fn zp_write(&mut self, addr: u8, val: u8, bus: &mut dyn Bus) {
         // TODO: maybe optimize
         self.write(u16::from(addr), val, bus);
     }
 
-    pub fn step(&mut self, bus: &mut Bus) {
+    pub fn step(&mut self, bus: &mut dyn Bus) {
         let pc = self.pc;
         let ins = self.read(pc, bus);
         self.pc = self.pc.wrapping_add(1);
@@ -768,30 +768,30 @@ impl Cpu {
         }
     }
 
-    fn write_stack(&mut self, val: u8, bus: &mut Bus) {
+    fn write_stack(&mut self, val: u8, bus: &mut dyn Bus) {
         let addr = 0x100 | u16::from(self.sp);
         self.write(addr, val, bus);
     }
 
-    fn push(&mut self, val: u8, bus: &mut Bus) {
+    fn push(&mut self, val: u8, bus: &mut dyn Bus) {
         self.waste_cycle(bus);
         self.write_stack(val, bus);
         self.sp = self.sp.wrapping_sub(1);
     }
 
-    fn read_stack(&mut self, bus: &mut Bus) -> u8 {
+    fn read_stack(&mut self, bus: &mut dyn Bus) -> u8 {
         let addr = 0x100 | u16::from(self.sp);
         self.read(addr, bus)
     }
 
-    fn pull(&mut self, bus: &mut Bus) -> u8 {
+    fn pull(&mut self, bus: &mut dyn Bus) -> u8 {
         self.waste_cycle(bus);
         let _ = self.read_stack(bus);
         self.sp = self.sp.wrapping_add(1);
         self.read_stack(bus)
     }
 
-    fn cond_branch(&mut self, cond: bool, bus: &mut Bus) {
+    fn cond_branch(&mut self, cond: bool, bus: &mut dyn Bus) {
         let rel = self.imm(bus);
         if cond {
             let pc = self.pc;
@@ -807,7 +807,7 @@ impl Cpu {
 
     // More complex instructions
 
-    fn jsr(&mut self, bus: &mut Bus) {
+    fn jsr(&mut self, bus: &mut dyn Bus) {
         let target_lo = self.imm(bus);
         let _ = self.read_stack(bus);
         let hi = (self.pc >> 8) as u8;
@@ -820,7 +820,7 @@ impl Cpu {
         self.pc = (u16::from(target_hi) << 8) | u16::from(target_lo);
     }
 
-    fn rts(&mut self, bus: &mut Bus) {
+    fn rts(&mut self, bus: &mut dyn Bus) {
         self.waste_cycle(bus);
         let _ = self.read_stack(bus);
         self.sp = self.sp.wrapping_add(1);
@@ -832,7 +832,7 @@ impl Cpu {
         self.pc = pc.wrapping_add(1);
     }
 
-    fn brk(&mut self, bus: &mut Bus) {
+    fn brk(&mut self, bus: &mut dyn Bus) {
         self.waste_cycle(bus);
         self.pc = self.pc.wrapping_add(1);
         let hi = (self.pc >> 8) as u8;
@@ -850,7 +850,7 @@ impl Cpu {
         self.flags |= 0x04;
     }
 
-    fn rti(&mut self, bus: &mut Bus) {
+    fn rti(&mut self, bus: &mut dyn Bus) {
         self.waste_cycle(bus);
         let _ = self.read_stack(bus);
         self.sp = self.sp.wrapping_add(1);
@@ -864,19 +864,19 @@ impl Cpu {
 
     // Addressing modes
 
-    fn waste_cycle(&mut self, bus: &mut Bus) {
+    fn waste_cycle(&mut self, bus: &mut dyn Bus) {
         let pc = self.pc;
         let _ = self.read(pc, bus);
     }
 
-    fn imm(&mut self, bus: &mut Bus) -> u8 {
+    fn imm(&mut self, bus: &mut dyn Bus) -> u8 {
         let pc = self.pc;
         let result = self.read(pc, bus);
         self.pc = self.pc.wrapping_add(1);
         result
     }
 
-    fn abs_addr(&mut self, bus: &mut Bus) -> u16 {
+    fn abs_addr(&mut self, bus: &mut dyn Bus) -> u16 {
         let pc = self.pc;
         let lo = self.read(pc, bus);
         let hi = self.read(pc.wrapping_add(1), bus);
@@ -884,7 +884,7 @@ impl Cpu {
         (u16::from(hi) << 8) | u16::from(lo)
     }
 
-    fn abs_ix_addr(&mut self, ix: u8, bus: &mut Bus) -> u16 {
+    fn abs_ix_addr(&mut self, ix: u8, bus: &mut dyn Bus) -> u16 {
         let pc = self.pc;
         let lo = self.read(pc, bus);
         let mut hi = self.read(pc.wrapping_add(1), bus);
@@ -897,31 +897,31 @@ impl Cpu {
         (u16::from(hi) << 8) | u16::from(new_lo)
     }
 
-    fn abs_x_addr(&mut self, bus: &mut Bus) -> u16 {
+    fn abs_x_addr(&mut self, bus: &mut dyn Bus) -> u16 {
         let x = self.x;
         self.abs_ix_addr(x, bus)
     }
 
-    fn abs_y_addr(&mut self, bus: &mut Bus) -> u16 {
+    fn abs_y_addr(&mut self, bus: &mut dyn Bus) -> u16 {
         let y = self.y;
         self.abs_ix_addr(y, bus)
     }
 
-    fn read_x_ind(&mut self, bus: &mut Bus) -> u8 {
+    fn read_x_ind(&mut self, bus: &mut dyn Bus) -> u8 {
         let addr = self.zp_x_addr(bus);
         let lo = self.zp_read(addr, bus);
         let hi = self.zp_read(addr.wrapping_add(1), bus);
         self.read((u16::from(hi) << 8) | u16::from(lo), bus)
     }
 
-    fn write_x_ind(&mut self, val: u8, bus: &mut Bus) {
+    fn write_x_ind(&mut self, val: u8, bus: &mut dyn Bus) {
         let addr = self.zp_x_addr(bus);
         let lo = self.zp_read(addr, bus);
         let hi = self.zp_read(addr.wrapping_add(1), bus);
         self.write((u16::from(hi) << 8) | u16::from(lo), val, bus);
     }
 
-    fn ind_y_addr(&mut self, bus: &mut Bus) -> (u16, u16) {
+    fn ind_y_addr(&mut self, bus: &mut dyn Bus) -> (u16, u16) {
         let addr = self.imm(bus);
         let lo = self.zp_read(addr, bus);
         let hi = self.zp_read(addr.wrapping_add(1), bus);
@@ -931,7 +931,7 @@ impl Cpu {
         (addr_no_carry, new_addr)        
     }
 
-    fn read_ind_y(&mut self, bus: &mut Bus) -> u8 {
+    fn read_ind_y(&mut self, bus: &mut dyn Bus) -> u8 {
         let (addr_no_carry, new_addr) = self.ind_y_addr(bus);
         if new_addr != addr_no_carry {
             let _ = self.read(addr_no_carry, bus);
@@ -939,95 +939,95 @@ impl Cpu {
         self.read(new_addr, bus)
     }
 
-    fn write_ind_y(&mut self, val: u8, bus: &mut Bus) {
+    fn write_ind_y(&mut self, val: u8, bus: &mut dyn Bus) {
         let (addr_no_carry, new_addr) = self.ind_y_addr(bus);
         let _ = self.read(addr_no_carry, bus);
         self.write(new_addr, val, bus);
     }
 
-    fn zp_addr(&mut self, bus: &mut Bus) -> u8 {
+    fn zp_addr(&mut self, bus: &mut dyn Bus) -> u8 {
         self.imm(bus)
     }
 
-    fn read_zp(&mut self, bus: &mut Bus) -> u8 {
+    fn read_zp(&mut self, bus: &mut dyn Bus) -> u8 {
         let addr = self.zp_addr(bus);
         self.zp_read(addr, bus)
     }
 
-    fn write_zp(&mut self, val: u8, bus: &mut Bus) {
+    fn write_zp(&mut self, val: u8, bus: &mut dyn Bus) {
         let addr = self.zp_addr(bus);
         self.zp_write(addr, val, bus);
     }
 
-    fn rd_wr_zp(&mut self, bus: &mut Bus) -> (u8, u8) {
+    fn rd_wr_zp(&mut self, bus: &mut dyn Bus) -> (u8, u8) {
         let addr = self.zp_addr(bus);
         let val = self.zp_read(addr, bus);
         self.zp_write(addr, val, bus);  // wasted cycle
         (val, addr)
     }
 
-    fn zp_x_addr(&mut self, bus: &mut Bus) -> u8 {
+    fn zp_x_addr(&mut self, bus: &mut dyn Bus) -> u8 {
         let addr = self.zp_addr(bus);
         let _ = self.zp_read(addr, bus);
         addr.wrapping_add(self.x)
     }
 
-    fn read_zp_x(&mut self, bus: &mut Bus) -> u8 {
+    fn read_zp_x(&mut self, bus: &mut dyn Bus) -> u8 {
         let addr = self.zp_x_addr(bus);
         self.zp_read(addr, bus)
     }
 
-    fn write_zp_x(&mut self, val: u8, bus: &mut Bus) {
+    fn write_zp_x(&mut self, val: u8, bus: &mut dyn Bus) {
         let addr = self.zp_x_addr(bus);
         self.zp_write(addr, val, bus);
     }
 
-    fn rd_wr_zp_x(&mut self, bus: &mut Bus) -> (u8, u8) {
+    fn rd_wr_zp_x(&mut self, bus: &mut dyn Bus) -> (u8, u8) {
         let addr = self.zp_x_addr(bus);
         let val = self.zp_read(addr, bus);
         self.zp_write(addr, val, bus);  // wasted cycle
         (val, addr)
     }
 
-    fn zp_y_addr(&mut self, bus: &mut Bus) -> u8 {
+    fn zp_y_addr(&mut self, bus: &mut dyn Bus) -> u8 {
         let addr = self.zp_addr(bus);
         let _ = self.zp_read(addr, bus);
         addr.wrapping_add(self.y)
     }
 
-    fn read_zp_y(&mut self, bus: &mut Bus) -> u8 {
+    fn read_zp_y(&mut self, bus: &mut dyn Bus) -> u8 {
         let addr = self.zp_y_addr(bus);
         self.zp_read(addr, bus)
     }
 
-    fn write_zp_y(&mut self, val: u8, bus: &mut Bus) {
+    fn write_zp_y(&mut self, val: u8, bus: &mut dyn Bus) {
         let addr = self.zp_y_addr(bus);
         self.zp_write(addr, val, bus);
     }
 
-    fn read_abs(&mut self, bus: &mut Bus) -> u8 {
+    fn read_abs(&mut self, bus: &mut dyn Bus) -> u8 {
         let addr = self.abs_addr(bus);
         self.read(addr, bus)
     }
 
-    fn write_abs(&mut self, val: u8, bus: &mut Bus) {
+    fn write_abs(&mut self, val: u8, bus: &mut dyn Bus) {
         let addr = self.abs_addr(bus);
         self.write(addr, val, bus);
     }
 
-    fn rd_wr_abs(&mut self, bus: &mut Bus) -> (u8, u16) {
+    fn rd_wr_abs(&mut self, bus: &mut dyn Bus) -> (u8, u16) {
         let addr = self.abs_addr(bus);
         let val = self.read(addr, bus);
         self.write(addr, val, bus);  // wasted cycle
         (val, addr)
     }
 
-    fn read_abs_x(&mut self, bus: &mut Bus) -> u8 {
+    fn read_abs_x(&mut self, bus: &mut dyn Bus) -> u8 {
         let addr = self.abs_x_addr(bus);
         self.read(addr, bus)
     }
 
-    fn write_abs_ix(&mut self, val: u8, ix: u8, bus: &mut Bus) {
+    fn write_abs_ix(&mut self, val: u8, ix: u8, bus: &mut dyn Bus) {
         let addr = self.abs_addr(bus);
         let new_addr = addr.wrapping_add(u16::from(ix));
         let addr_no_carry = (addr & 0xff00) | (new_addr & 0xff);
@@ -1035,17 +1035,17 @@ impl Cpu {
         self.write(new_addr, val, bus);
     }
 
-    fn write_abs_x(&mut self, val: u8, bus: &mut Bus) {
+    fn write_abs_x(&mut self, val: u8, bus: &mut dyn Bus) {
         let x = self.x;
         self.write_abs_ix(val, x, bus);
     }
 
-    fn write_abs_y(&mut self, val: u8, bus: &mut Bus) {
+    fn write_abs_y(&mut self, val: u8, bus: &mut dyn Bus) {
         let y = self.y;
         self.write_abs_ix(val, y, bus);
     }
 
-    fn rd_wr_abs_x(&mut self, bus: &mut Bus) -> (u8, u16) {
+    fn rd_wr_abs_x(&mut self, bus: &mut dyn Bus) -> (u8, u16) {
         let addr = self.abs_addr(bus);
         let new_addr = addr.wrapping_add(u16::from(self.x));
         let addr_no_carry = (addr & 0xff00) | (new_addr & 0xff);
@@ -1055,7 +1055,7 @@ impl Cpu {
         (val, new_addr)
     }
 
-    fn read_abs_y(&mut self, bus: &mut Bus) -> u8 {
+    fn read_abs_y(&mut self, bus: &mut dyn Bus) -> u8 {
         let addr = self.abs_y_addr(bus);
         self.read(addr, bus)
     }
