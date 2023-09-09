@@ -33,14 +33,19 @@ fn main() {
     let mut cpu = Cpu::new();
     cpu.mem.copy_from_slice(&bin);
     cpu.pc = 0x400;
+    cpu.addr = 0x400;
     cpu.set_masks(!0, !0);
     let mut debug_bus = DebugBus;
+    let mut last_insn_addr = 0;
     loop {
+        cpu.do_bus(&mut debug_bus);
         cpu.print_state();
-        let pc = cpu.pc;
-        cpu.step(&mut debug_bus);
-        if pc == cpu.pc {
-            break;
+        if cpu.insn_cycle == 1 {
+            if cpu.addr == last_insn_addr {
+                break;
+            }
+            last_insn_addr = cpu.addr;
         }
+        cpu.cpu_clk();
     }
 }
