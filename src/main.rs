@@ -46,6 +46,6 @@ fn main() {
             }
             last_insn_addr = cpu.addr;
         }
-        cpu.cpu_clk();
+        cpu.cpu_clk_ucode();
     }
 }
