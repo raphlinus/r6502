@@ -73,7 +73,6 @@ enum UcodeStep {
     Cld,
     Sed,
     Clv,
-    Sev,
     Txs,
     Tsx,
     Tax,
@@ -168,271 +167,284 @@ const fn c4(s1: UcodeStep, s2: UcodeStep, s3: UcodeStep, s4: UcodeStep) -> [Ucod
     [Fetch, s1, s2, s3, s4, Next, Next, Next]
 }
 
-const fn c5(s1: UcodeStep, s2: UcodeStep, s3: UcodeStep, s4: UcodeStep, s5: UcodeStep,) -> [UcodeStep; 8] {
+const fn c5(
+    s1: UcodeStep,
+    s2: UcodeStep,
+    s3: UcodeStep,
+    s4: UcodeStep,
+    s5: UcodeStep,
+) -> [UcodeStep; 8] {
     [Fetch, s1, s2, s3, s4, s5, Next, Next]
 }
 
-const fn c6(s1: UcodeStep, s2: UcodeStep, s3: UcodeStep, s4: UcodeStep, s5: UcodeStep, s6: UcodeStep) -> [UcodeStep; 8] {
+const fn c6(
+    s1: UcodeStep,
+    s2: UcodeStep,
+    s3: UcodeStep,
+    s4: UcodeStep,
+    s5: UcodeStep,
+    s6: UcodeStep,
+) -> [UcodeStep; 8] {
     [Fetch, s1, s2, s3, s4, s5, s6, Next]
 }
 
 const UCODE: [[UcodeStep; 8]; 256] = [
-    c6(Brk1, Jsr3, Brk3, Brk4, Brk5, Brk6), // 00 BRK
-    c5(Zpg, XInd2, IndY2, XInd4, Ora), // 01 ORA X,ind
-    c1(Nyi), // 02
-    c1(Nyi), // 03
-    c1(Nyi), // 04
-    c2(Zpg, Ora), // 05 ORA zpg
-    c4(Zpg, Rmw2, AslMem, Next), // 06 ASL zpg
-    c1(Nyi), // 07
-    c2(Php, Next), // 08 PHP
-    c1(OraImm), // 09 ORA #
-    c1(AslA), // 0a ASL A
-    c1(Nyi), // 0b
-    c1(Nyi), // 0c
-    c3(Abs1, Abs2, Ora), // 0d ORA abs
-    c5(Abs1, Abs2, Rmw2, AslMem, Next), // 0e ASL abs
-    c1(Nyi), // 0f
-    c3(Bpl, CondBr, Next), // 10 BPL rel
-    c5(Zpg, IndY2, IndY3, OraIx, Ora), // 11 ORA ind,y
-    c1(Nyi), // 12
-    c1(Nyi), // 13
-    c1(Nyi), // 14
-    c3(Zpg, ZpgX, Ora), // 15 ORA zpg,X
-    c5(Zpg, ZpgX, Rmw2, AslMem, Next), // 16 ASL zpg,X
-    c1(Nyi), // 17
-    c1(Clc), // 18 CLC
-    c4(Abs1, AbsY, OraIx, Ora), // 19 ORA abs,Y
-    c1(Nyi), // 1a
-    c1(Nyi), // 1b
-    c1(Nyi), // 1c
-    c4(Abs1, AbsX, OraIx, Ora), // 1d ORA abs,X
+    c6(Brk1, Jsr3, Brk3, Brk4, Brk5, Brk6),    // 00 BRK
+    c5(Zpg, XInd2, IndY2, XInd4, Ora),         // 01 ORA X,ind
+    c1(Nyi),                                   // 02
+    c1(Nyi),                                   // 03
+    c1(Nyi),                                   // 04
+    c2(Zpg, Ora),                              // 05 ORA zpg
+    c4(Zpg, Rmw2, AslMem, Next),               // 06 ASL zpg
+    c1(Nyi),                                   // 07
+    c2(Php, Next),                             // 08 PHP
+    c1(OraImm),                                // 09 ORA #
+    c1(AslA),                                  // 0a ASL A
+    c1(Nyi),                                   // 0b
+    c1(Nyi),                                   // 0c
+    c3(Abs1, Abs2, Ora),                       // 0d ORA abs
+    c5(Abs1, Abs2, Rmw2, AslMem, Next),        // 0e ASL abs
+    c1(Nyi),                                   // 0f
+    c3(Bpl, CondBr, Next),                     // 10 BPL rel
+    c5(Zpg, IndY2, IndY3, OraIx, Ora),         // 11 ORA ind,y
+    c1(Nyi),                                   // 12
+    c1(Nyi),                                   // 13
+    c1(Nyi),                                   // 14
+    c3(Zpg, ZpgX, Ora),                        // 15 ORA zpg,X
+    c5(Zpg, ZpgX, Rmw2, AslMem, Next),         // 16 ASL zpg,X
+    c1(Nyi),                                   // 17
+    c1(Clc),                                   // 18 CLC
+    c4(Abs1, AbsY, OraIx, Ora),                // 19 ORA abs,Y
+    c1(Nyi),                                   // 1a
+    c1(Nyi),                                   // 1b
+    c1(Nyi),                                   // 1c
+    c4(Abs1, AbsX, OraIx, Ora),                // 1d ORA abs,X
     c6(Abs1, AbsX, AbsIx, Rmw2, AslMem, Next), // 1e ASL abs,X
-    c1(Nyi), // 1f
-    c5(Jsr1, Jsr2, Jsr3, Jsr4, Jmp), // 20 JSR
-    c5(Zpg, XInd2, IndY2, XInd4, And), // 21 AND X,ind
-    c1(Nyi), // 22
-    c1(Nyi), // 23
-    c2(Zpg, Bit), // 24 BIT zpg
-    c2(Zpg, And), // 25 AND zpg
-    c4(Zpg, Rmw2, RolMem, Next), // 26 ROL zpg
-    c1(Nyi), // 27
-    c3(Pull1, Pull2, Plp), // 28 PLP
-    c1(AndImm), // 29 AND #
-    c1(RolA), // 2a ROL A
-    c1(Nyi), // 2b
-    c3(Abs1, Abs2, Bit), // 2c BIT abs
-    c3(Abs1, Abs2, And), // 2d AND abs
-    c5(Abs1, Abs2, Rmw2, RolMem, Next), // 2e ROL abs
-    c1(Nyi), // 2f
-    c3(Bmi, CondBr, Next), // 30 BMI rel
-    c5(Zpg, IndY2, IndY3, AndIx, And), // 31 AND ind,y
-    c1(Nyi), // 32
-    c1(Nyi), // 33
-    c1(Nyi), // 34
-    c3(Zpg, ZpgX, And), // 35 AND zpg,X
-    c5(Zpg, ZpgX, Rmw2, RolMem, Next), // 36 ROL zpg,X
-    c1(Nyi), // 37
-    c1(Sec), // 38 SEC
-    c4(Abs1, AbsY, AndIx, And), // 39 AND abs,Y
-    c1(Nyi), // 3a
-    c1(Nyi), // 3b
-    c1(Nyi), // 3c
-    c4(Abs1, AbsX, AndIx, And), // 3d AND abs,X
+    c1(Nyi),                                   // 1f
+    c5(Jsr1, Jsr2, Jsr3, Jsr4, Jmp),           // 20 JSR
+    c5(Zpg, XInd2, IndY2, XInd4, And),         // 21 AND X,ind
+    c1(Nyi),                                   // 22
+    c1(Nyi),                                   // 23
+    c2(Zpg, Bit),                              // 24 BIT zpg
+    c2(Zpg, And),                              // 25 AND zpg
+    c4(Zpg, Rmw2, RolMem, Next),               // 26 ROL zpg
+    c1(Nyi),                                   // 27
+    c3(Pull1, Pull2, Plp),                     // 28 PLP
+    c1(AndImm),                                // 29 AND #
+    c1(RolA),                                  // 2a ROL A
+    c1(Nyi),                                   // 2b
+    c3(Abs1, Abs2, Bit),                       // 2c BIT abs
+    c3(Abs1, Abs2, And),                       // 2d AND abs
+    c5(Abs1, Abs2, Rmw2, RolMem, Next),        // 2e ROL abs
+    c1(Nyi),                                   // 2f
+    c3(Bmi, CondBr, Next),                     // 30 BMI rel
+    c5(Zpg, IndY2, IndY3, AndIx, And),         // 31 AND ind,y
+    c1(Nyi),                                   // 32
+    c1(Nyi),                                   // 33
+    c1(Nyi),                                   // 34
+    c3(Zpg, ZpgX, And),                        // 35 AND zpg,X
+    c5(Zpg, ZpgX, Rmw2, RolMem, Next),         // 36 ROL zpg,X
+    c1(Nyi),                                   // 37
+    c1(Sec),                                   // 38 SEC
+    c4(Abs1, AbsY, AndIx, And),                // 39 AND abs,Y
+    c1(Nyi),                                   // 3a
+    c1(Nyi),                                   // 3b
+    c1(Nyi),                                   // 3c
+    c4(Abs1, AbsX, AndIx, And),                // 3d AND abs,X
     c6(Abs1, AbsX, AbsIx, Rmw2, RolMem, Next), // 3e ROL abs,X
-    c1(Nyi), // 3f
-    c5(Pull1, Pull1, Rti3, Rts3, Jmp), // 40 RTI
-    c5(Zpg, XInd2, IndY2, XInd4, Eor), // 41 EOR X,ind
-    c1(Nyi), // 42
-    c1(Nyi), // 43
-    c1(Nyi), // 44
-    c2(Zpg, Eor), // 45 EOR zpg
-    c4(Zpg, Rmw2, LsrMem, Next), // 46 LSR zpg
-    c1(Nyi), // 47
-    c2(Pha, Next), // 48 PHA
-    c1(EorImm), // 49 EOR #
-    c1(LsrA), // 4a LSR A
-    c1(Nyi), // 4b
-    c2(Abs1, Jmp), // 4c JMP abs
-    c3(Abs1, Abs2, Eor), // 4d EOR abs
-    c5(Abs1, Abs2, Rmw2, LsrMem, Next), // 4e LSR abs
-    c1(Nyi), // 4f
-    c3(Bvc, CondBr, Next), // 50 BVC rel
-    c5(Zpg, IndY2, IndY3, EorIx, Eor), // 51 EOR ind,y
-    c1(Nyi), // 52
-    c1(Nyi), // 53
-    c1(Nyi), // 54
-    c3(Zpg, ZpgX, Eor), // 55 EOR zpg,X
-    c5(Zpg, ZpgX, Rmw2, LsrMem, Next), // 56 LSR zpg,X
-    c1(Nyi), // 57
-    c1(Cli), // 58 // CLI
-    c4(Abs1, AbsY, EorIx, Eor), // 59 EOR abs,Y
-    c1(Nyi), // 5a
-    c1(Nyi), // 5b
-    c1(Nyi), // 5c
-    c4(Abs1, AbsX, EorIx, Eor), // 5d EOR abs,X
+    c1(Nyi),                                   // 3f
+    c5(Pull1, Pull1, Rti3, Rts3, Jmp),         // 40 RTI
+    c5(Zpg, XInd2, IndY2, XInd4, Eor),         // 41 EOR X,ind
+    c1(Nyi),                                   // 42
+    c1(Nyi),                                   // 43
+    c1(Nyi),                                   // 44
+    c2(Zpg, Eor),                              // 45 EOR zpg
+    c4(Zpg, Rmw2, LsrMem, Next),               // 46 LSR zpg
+    c1(Nyi),                                   // 47
+    c2(Pha, Next),                             // 48 PHA
+    c1(EorImm),                                // 49 EOR #
+    c1(LsrA),                                  // 4a LSR A
+    c1(Nyi),                                   // 4b
+    c2(Abs1, Jmp),                             // 4c JMP abs
+    c3(Abs1, Abs2, Eor),                       // 4d EOR abs
+    c5(Abs1, Abs2, Rmw2, LsrMem, Next),        // 4e LSR abs
+    c1(Nyi),                                   // 4f
+    c3(Bvc, CondBr, Next),                     // 50 BVC rel
+    c5(Zpg, IndY2, IndY3, EorIx, Eor),         // 51 EOR ind,y
+    c1(Nyi),                                   // 52
+    c1(Nyi),                                   // 53
+    c1(Nyi),                                   // 54
+    c3(Zpg, ZpgX, Eor),                        // 55 EOR zpg,X
+    c5(Zpg, ZpgX, Rmw2, LsrMem, Next),         // 56 LSR zpg,X
+    c1(Nyi),                                   // 57
+    c1(Cli),                                   // 58 CLI
+    c4(Abs1, AbsY, EorIx, Eor),                // 59 EOR abs,Y
+    c1(Nyi),                                   // 5a
+    c1(Nyi),                                   // 5b
+    c1(Nyi),                                   // 5c
+    c4(Abs1, AbsX, EorIx, Eor),                // 5d EOR abs,X
     c6(Abs1, AbsX, AbsIx, Rmw2, LsrMem, Next), // 5e LSR abs,X
-    c1(Nyi), // 5f
-    c5(Pull1, Pull1, Rts3, Rts4, Rts5), // 60 RTS
-    c5(Zpg, XInd2, IndY2, XInd4, Adc), // 61 ADC X,ind
-    c1(Nyi), // 62
-    c1(Nyi), // 63
-    c1(Nyi), // 64
-    c2(Zpg, Adc), // 65 ADC zpg
-    c4(Zpg, Rmw2, RorMem, Next), // 66 ROR zpg
-    c1(Nyi), // 67
-    c3(Pull1, Pull2, Lda), // 68 PLA
-    c1(AdcImm), // 69 ADC #
-    c1(RorA), // 6a ROR A
-    c1(Nyi), // 6b
-    c4(Abs1, Abs2, Ind, Jmp), // 6c JMP ind
-    c3(Abs1, Abs2, Adc), // 6d ADC abs
-    c5(Abs1, Abs2, Rmw2, RorMem, Next), // 6e ROR abs
-    c1(Nyi), // 6f
-    c3(Bvs, CondBr, Next), // 70 BVS rel
-    c5(Zpg, IndY2, IndY3, AdcIx, Adc), // 71 ADC ind,y
-    c1(Nyi), // 72
-    c1(Nyi), // 73
-    c1(Nyi), // 74
-    c3(Zpg, ZpgX, Adc), // 75 ADC zpg,X
-    c5(Zpg, ZpgX, Rmw2, RorMem, Next), // 76 ROR zpg,X
-    c1(Nyi), // 77
-    c1(Sei), // 78 SEI
-    c4(Abs1, AbsY, AdcIx, Adc), // 79 ADC abs,Y
-    c1(Nyi), // 7a
-    c1(Nyi), // 7b
-    c1(Nyi), // 7c
-    c4(Abs1, AbsX, AdcIx, Adc), // 7d ADC abs,X
+    c1(Nyi),                                   // 5f
+    c5(Pull1, Pull1, Rts3, Rts4, Rts5),        // 60 RTS
+    c5(Zpg, XInd2, IndY2, XInd4, Adc),         // 61 ADC X,ind
+    c1(Nyi),                                   // 62
+    c1(Nyi),                                   // 63
+    c1(Nyi),                                   // 64
+    c2(Zpg, Adc),                              // 65 ADC zpg
+    c4(Zpg, Rmw2, RorMem, Next),               // 66 ROR zpg
+    c1(Nyi),                                   // 67
+    c3(Pull1, Pull2, Lda),                     // 68 PLA
+    c1(AdcImm),                                // 69 ADC #
+    c1(RorA),                                  // 6a ROR A
+    c1(Nyi),                                   // 6b
+    c4(Abs1, Abs2, Ind, Jmp),                  // 6c JMP ind
+    c3(Abs1, Abs2, Adc),                       // 6d ADC abs
+    c5(Abs1, Abs2, Rmw2, RorMem, Next),        // 6e ROR abs
+    c1(Nyi),                                   // 6f
+    c3(Bvs, CondBr, Next),                     // 70 BVS rel
+    c5(Zpg, IndY2, IndY3, AdcIx, Adc),         // 71 ADC ind,y
+    c1(Nyi),                                   // 72
+    c1(Nyi),                                   // 73
+    c1(Nyi),                                   // 74
+    c3(Zpg, ZpgX, Adc),                        // 75 ADC zpg,X
+    c5(Zpg, ZpgX, Rmw2, RorMem, Next),         // 76 ROR zpg,X
+    c1(Nyi),                                   // 77
+    c1(Sei),                                   // 78 SEI
+    c4(Abs1, AbsY, AdcIx, Adc),                // 79 ADC abs,Y
+    c1(Nyi),                                   // 7a
+    c1(Nyi),                                   // 7b
+    c1(Nyi),                                   // 7c
+    c4(Abs1, AbsX, AdcIx, Adc),                // 7d ADC abs,X
     c6(Abs1, AbsX, AbsIx, Rmw2, RorMem, Next), // 7e ROR abs,X
-    c1(Nyi), // 7f
-    c1(Nyi), // 80
-    c5(Zpg, XInd2, IndY2, StaXInd, Next), // 81 STA X,ind
-    c1(Nyi), // 82
-    c1(Nyi), // 83
-    c2(StyZpg, Next), // 84 STY zpg
-    c2(StaZpg, Next), // 85 STA zpg
-    c2(StxZpg, Next), // 86 STX zpg
-    c1(Nyi), // 87
-    c1(Dey), // 88 DEY
-    c1(Nyi), // 89
-    c1(Txa), // 8a TXA
-    c1(Nyi), // 8b
-    c3(Abs1, StyAbs, Next), // 8c STY abs
-    c3(Abs1, StaAbs, Next), // 8d STA abs
-    c3(Abs1, StxAbs, Next), // 8e STX abs
-    c1(Nyi), // 8f
-    c3(Bcc, CondBr, Next), // 90 BCC rel
-    c5(Zpg, IndY2, IndY3, StaAbsIx, Next), // 91 STA ind,Y
-    c1(Nyi), // 92
-    c1(Nyi), // 93
-    c3(Zpg, StyZpgX, Next), // 94 // STY zpg,X
-    c3(Zpg, StaZpgX, Next), // 95 // STA zpg,X
-    c3(Zpg, StxZpgY, Next), // 96 // STX zpg,Y
-    c1(Nyi), // 97
-    c1(Tya), // 98 TYA
-    c4(Abs1, AbsY, StaAbsIx, Next), // 99 STA abs,Y
-    c1(Txs), // 9a TXS
-    c1(Nyi), // 9b
-    c1(Nyi), // 9c
-    c4(Abs1, AbsX, StaAbsIx, Next), // 9d STA abs,X
-    c1(Nyi), // 9e
-    c1(Nyi), // 9f
-    c1(LdyImm), // a0 LDY #
-    c5(Zpg, XInd2, IndY2, XInd4, Lda), // a1 LDA X,ind
-    c1(LdxImm), // a2 LDX #
-    c1(Nyi), // a3
-    c2(Zpg, Ldy), // a4 LDY zpg
-    c2(Zpg, Lda), // a5 LDA zpg
-    c2(Zpg, Ldx), // a6 LDX zpg
-    c1(Nyi), // a7
-    c1(Tay), // a8 TAY
-    c1(LdaImm), // a9 LDA #
-    c1(Tax), // aa TAX
-    c1(Nyi), // ab
-    c3(Abs1, Abs2, Ldy), // ac LDY abs
-    c3(Abs1, Abs2, Lda), // ad LDA abs
-    c3(Abs1, Abs2, Ldx), // ae LDX abs
-    c1(Nyi), // af
-    c3(Bcs, CondBr, Next), // b0 BCS rel
-    c5(Zpg, IndY2, IndY3, LdaIx, Lda), // b1 LDA ind,y
-    c1(Nyi), // b2
-    c1(Nyi), // b3
-    c3(Zpg, ZpgX, Ldy), // b4 LDY zpg,X
-    c3(Zpg, ZpgX, Lda), // b5 LDA zpg,X
-    c3(Zpg, ZpgY, Ldx), // b6 LDX zpg,Y
-    c1(Nyi), // b7
-    c1(Clv), // b8 CLV
-    c4(Abs1, AbsY, LdaIx, Lda), // b9 LDA abs,Y
-    c1(Tsx), // ba TSX
-    c1(Nyi), // bb
-    c4(Abs1, AbsX, LdyIx, Ldy), // bc LDY abs,X
-    c4(Abs1, AbsX, LdaIx, Lda), // bd LDA abs,X
-    c4(Abs1, AbsY, LdxIx, Ldx), // be LDX abs,Y
-    c1(Nyi), // bf
-    c1(CpyImm), // c0 CPY #
-    c5(Zpg, XInd2, IndY2, XInd4, Cmp), // c1 CMP X,ind
-    c1(Nyi), // c2
-    c1(Nyi), // c3
-    c2(Zpg, Cpy), // c4 CPY zpg
-    c2(Zpg, Cmp), // c5 CMP zpg
-    c4(Zpg, Rmw2, DecMem, Next), // c6 DEC zpg
-    c1(Nyi), // c7
-    c1(Iny), // c8 INY
-    c1(CmpImm), // c9 CMP #
-    c1(Dex), // ca DEX
-    c1(Nyi), // cb
-    c3(Abs1, Abs2, Cpy), // cc CPY abs
-    c3(Abs1, Abs2, Cmp), // cd CMP abs
-    c5(Abs1, Abs2, Rmw2, DecMem, Next), // ce DEC abs
-    c1(Nyi), // cf
-    c3(Bne, CondBr, Next), // d0 BNE rel
-    c5(Zpg, IndY2, IndY3, CmpIx, Cmp), // d1 CMP ind,y
-    c1(Nyi), // d2
-    c1(Nyi), // d3
-    c1(Nyi), // d4
-    c3(Zpg, ZpgX, Cmp), // d5 CMP zpg,X
-    c5(Zpg, ZpgX, Rmw2, DecMem, Next), // d6 DEC zpg,X
-    c1(Nyi), // d7
-    c1(Cld), // d8 CLD
-    c4(Abs1, AbsY, CmpIx, Cmp), // d9 CMP abs,Y
-    c1(Nyi), // da
-    c1(Nyi), // db
-    c1(Nyi), // dc
-    c4(Abs1, AbsX, CmpIx, Cmp), // dd CMP abs,X
+    c1(Nyi),                                   // 7f
+    c1(Nyi),                                   // 80
+    c5(Zpg, XInd2, IndY2, StaXInd, Next),      // 81 STA X,ind
+    c1(Nyi),                                   // 82
+    c1(Nyi),                                   // 83
+    c2(StyZpg, Next),                          // 84 STY zpg
+    c2(StaZpg, Next),                          // 85 STA zpg
+    c2(StxZpg, Next),                          // 86 STX zpg
+    c1(Nyi),                                   // 87
+    c1(Dey),                                   // 88 DEY
+    c1(Nyi),                                   // 89
+    c1(Txa),                                   // 8a TXA
+    c1(Nyi),                                   // 8b
+    c3(Abs1, StyAbs, Next),                    // 8c STY abs
+    c3(Abs1, StaAbs, Next),                    // 8d STA abs
+    c3(Abs1, StxAbs, Next),                    // 8e STX abs
+    c1(Nyi),                                   // 8f
+    c3(Bcc, CondBr, Next),                     // 90 BCC rel
+    c5(Zpg, IndY2, IndY3, StaAbsIx, Next),     // 91 STA ind,Y
+    c1(Nyi),                                   // 92
+    c1(Nyi),                                   // 93
+    c3(Zpg, StyZpgX, Next),                    // 94 STY zpg,X
+    c3(Zpg, StaZpgX, Next),                    // 95 STA zpg,X
+    c3(Zpg, StxZpgY, Next),                    // 96 STX zpg,Y
+    c1(Nyi),                                   // 97
+    c1(Tya),                                   // 98 TYA
+    c4(Abs1, AbsY, StaAbsIx, Next),            // 99 STA abs,Y
+    c1(Txs),                                   // 9a TXS
+    c1(Nyi),                                   // 9b
+    c1(Nyi),                                   // 9c
+    c4(Abs1, AbsX, StaAbsIx, Next),            // 9d STA abs,X
+    c1(Nyi),                                   // 9e
+    c1(Nyi),                                   // 9f
+    c1(LdyImm),                                // a0 LDY #
+    c5(Zpg, XInd2, IndY2, XInd4, Lda),         // a1 LDA X,ind
+    c1(LdxImm),                                // a2 LDX #
+    c1(Nyi),                                   // a3
+    c2(Zpg, Ldy),                              // a4 LDY zpg
+    c2(Zpg, Lda),                              // a5 LDA zpg
+    c2(Zpg, Ldx),                              // a6 LDX zpg
+    c1(Nyi),                                   // a7
+    c1(Tay),                                   // a8 TAY
+    c1(LdaImm),                                // a9 LDA #
+    c1(Tax),                                   // aa TAX
+    c1(Nyi),                                   // ab
+    c3(Abs1, Abs2, Ldy),                       // ac LDY abs
+    c3(Abs1, Abs2, Lda),                       // ad LDA abs
+    c3(Abs1, Abs2, Ldx),                       // ae LDX abs
+    c1(Nyi),                                   // af
+    c3(Bcs, CondBr, Next),                     // b0 BCS rel
+    c5(Zpg, IndY2, IndY3, LdaIx, Lda),         // b1 LDA ind,y
+    c1(Nyi),                                   // b2
+    c1(Nyi),                                   // b3
+    c3(Zpg, ZpgX, Ldy),                        // b4 LDY zpg,X
+    c3(Zpg, ZpgX, Lda),                        // b5 LDA zpg,X
+    c3(Zpg, ZpgY, Ldx),                        // b6 LDX zpg,Y
+    c1(Nyi),                                   // b7
+    c1(Clv),                                   // b8 CLV
+    c4(Abs1, AbsY, LdaIx, Lda),                // b9 LDA abs,Y
+    c1(Tsx),                                   // ba TSX
+    c1(Nyi),                                   // bb
+    c4(Abs1, AbsX, LdyIx, Ldy),                // bc LDY abs,X
+    c4(Abs1, AbsX, LdaIx, Lda),                // bd LDA abs,X
+    c4(Abs1, AbsY, LdxIx, Ldx),                // be LDX abs,Y
+    c1(Nyi),                                   // bf
+    c1(CpyImm),                                // c0 CPY #
+    c5(Zpg, XInd2, IndY2, XInd4, Cmp),         // c1 CMP X,ind
+    c1(Nyi),                                   // c2
+    c1(Nyi),                                   // c3
+    c2(Zpg, Cpy),                              // c4 CPY zpg
+    c2(Zpg, Cmp),                              // c5 CMP zpg
+    c4(Zpg, Rmw2, DecMem, Next),               // c6 DEC zpg
+    c1(Nyi),                                   // c7
+    c1(Iny),                                   // c8 INY
+    c1(CmpImm),                                // c9 CMP #
+    c1(Dex),                                   // ca DEX
+    c1(Nyi),                                   // cb
+    c3(Abs1, Abs2, Cpy),                       // cc CPY abs
+    c3(Abs1, Abs2, Cmp),                       // cd CMP abs
+    c5(Abs1, Abs2, Rmw2, DecMem, Next),        // ce DEC abs
+    c1(Nyi),                                   // cf
+    c3(Bne, CondBr, Next),                     // d0 BNE rel
+    c5(Zpg, IndY2, IndY3, CmpIx, Cmp),         // d1 CMP ind,y
+    c1(Nyi),                                   // d2
+    c1(Nyi),                                   // d3
+    c1(Nyi),                                   // d4
+    c3(Zpg, ZpgX, Cmp),                        // d5 CMP zpg,X
+    c5(Zpg, ZpgX, Rmw2, DecMem, Next),         // d6 DEC zpg,X
+    c1(Nyi),                                   // d7
+    c1(Cld),                                   // d8 CLD
+    c4(Abs1, AbsY, CmpIx, Cmp),                // d9 CMP abs,Y
+    c1(Nyi),                                   // da
+    c1(Nyi),                                   // db
+    c1(Nyi),                                   // dc
+    c4(Abs1, AbsX, CmpIx, Cmp),                // dd CMP abs,X
     c6(Abs1, AbsX, AbsIx, Rmw2, DecMem, Next), // de DEC abs,X
-    c1(Nyi), // df
-    c1(CpxImm), // e0 CPX #
-    c5(Zpg, XInd2, IndY2, XInd4, Sbc), // e1 SBC X,ind
-    c1(Nyi), // e2
-    c1(Nyi), // e3
-    c2(Zpg, Cpx), // e4 CPX zpg
-    c2(Zpg, Sbc), // e5 SBC zpg
-    c4(Zpg, Rmw2, IncMem, Next), // e6 INC zpg
-    c1(Nyi), // e7
-    c1(Inx), // e8 INX
-    c1(SbcImm), // e9 SBC #
-    c1(Next), // ea NOP
-    c1(Nyi), // eb
-    c3(Abs1, Abs2, Cpx), // ec CPX abs
-    c3(Abs1, Abs2, Sbc), // ed SBC abs
-    c5(Abs1, Abs2, Rmw2, IncMem, Next), // ee INC abs
-    c1(Nyi), // ef
-    c3(Beq, CondBr, Next), // f0 BEQ rel
-    c5(Zpg, IndY2, IndY3, SbcIx, Sbc), // f1 SBC ind,y
-    c1(Nyi), // f2
-    c1(Nyi), // f3
-    c1(Nyi), // f4
-    c3(Zpg, ZpgX, Sbc), // f5 SBC zpg,X
-    c5(Zpg, ZpgX, Rmw2, IncMem, Next), // f6 INC zpg,X
-    c1(Nyi), // f7
-    c1(Sed), // f8 SED
-    c4(Abs1, AbsY, SbcIx, Sbc), // f9 SBC abs,Y
-    c1(Nyi), // fa
-    c1(Nyi), // fb
-    c1(Nyi), // fc
-    c4(Abs1, AbsX, SbcIx, Sbc), // fd SBC abs,X
+    c1(Nyi),                                   // df
+    c1(CpxImm),                                // e0 CPX #
+    c5(Zpg, XInd2, IndY2, XInd4, Sbc),         // e1 SBC X,ind
+    c1(Nyi),                                   // e2
+    c1(Nyi),                                   // e3
+    c2(Zpg, Cpx),                              // e4 CPX zpg
+    c2(Zpg, Sbc),                              // e5 SBC zpg
+    c4(Zpg, Rmw2, IncMem, Next),               // e6 INC zpg
+    c1(Nyi),                                   // e7
+    c1(Inx),                                   // e8 INX
+    c1(SbcImm),                                // e9 SBC #
+    c1(Next),                                  // ea NOP
+    c1(Nyi),                                   // eb
+    c3(Abs1, Abs2, Cpx),                       // ec CPX abs
+    c3(Abs1, Abs2, Sbc),                       // ed SBC abs
+    c5(Abs1, Abs2, Rmw2, IncMem, Next),        // ee INC abs
+    c1(Nyi),                                   // ef
+    c3(Beq, CondBr, Next),                     // f0 BEQ rel
+    c5(Zpg, IndY2, IndY3, SbcIx, Sbc),         // f1 SBC ind,y
+    c1(Nyi),                                   // f2
+    c1(Nyi),                                   // f3
+    c1(Nyi),                                   // f4
+    c3(Zpg, ZpgX, Sbc),                        // f5 SBC zpg,X
+    c5(Zpg, ZpgX, Rmw2, IncMem, Next),         // f6 INC zpg,X
+    c1(Nyi),                                   // f7
+    c1(Sed),                                   // f8 SED
+    c4(Abs1, AbsY, SbcIx, Sbc),                // f9 SBC abs,Y
+    c1(Nyi),                                   // fa
+    c1(Nyi),                                   // fb
+    c1(Nyi),                                   // fc
+    c4(Abs1, AbsX, SbcIx, Sbc),                // fd SBC abs,X
     c6(Abs1, AbsX, AbsIx, Rmw2, IncMem, Next), // fe INC abs,X
-    c1(Nyi), // ff
+    c1(Nyi),                                   // ff
 ];
 
 pub trait Bus {
@@ -607,1496 +619,6 @@ impl Cpu {
         }
     }
 
-    // logic every clock *after* a bus operation
-    pub fn cpu_clk(&mut self) {
-        self.insn_cycle = self.insn_cycle + 1;
-        println!("insn_cycle = {}, data = {:x}", self.insn_cycle, self.data);
-        let insn_cycle = self.insn_cycle;
-        if insn_cycle == 1 {
-            self.insn = self.data;
-            self.pc = self.pc.wrapping_add(1);
-            self.addr = self.pc;
-            self.is_write = false;
-        } else {
-            let (addr, is_write) = match self.insn {
-                0x00 => {
-                    // BRK
-                    self.brk()
-                }
-                0x01 => {
-                    // ORA X,ind
-                    if insn_cycle == 6 {
-                        self.set_a_nz(self.a | self.data);
-                    }
-                    self.rd_x_ind()
-                }
-                0x05 => {
-                    // ORA zpg
-                    if insn_cycle == 3 {
-                        self.set_a_nz(self.a | self.data);
-                    }
-                    self.rd_zpg()
-                }
-                0x06 => {
-                    // ASL zpg
-                    if insn_cycle == 4 {
-                        self.data = self.asl(self.data);
-                    }
-                    self.rmw_zpg()
-                }
-                0x08 => {
-                    // PHP
-                    if insn_cycle == 2 {
-                        self.data = self.flags
-                    }
-                    self.push()
-                }
-                0x09 => {
-                    // ORA #
-                    self.set_a_nz(self.a | self.data);
-                    self.rd_imm()
-                }
-                0x0a => {
-                    // ASL A
-                    self.a = self.asl(self.a);
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0x0d => {
-                    // ORA abs
-                    if insn_cycle == 4 {
-                        self.set_a_nz(self.a | self.data);
-                    }
-                    self.rd_abs()
-                }
-                0x0e => {
-                    // ASL abs
-                    if insn_cycle == 5 {
-                        self.data = self.asl(self.data);
-                    }
-                    self.rmw_abs()
-                }
-                0x10 => {
-                    // BPL rel
-                    self.cond_branch((self.flags & 0x80) == 0)
-                }
-                0x11 => {
-                    // ORA ind,Y
-                    let (active, next) = self.rd_ind_y();
-                    if active {
-                        self.set_a_nz(self.a | self.data);
-                    }
-                    next
-                }
-                0x15 => {
-                    // ORA zpg,X
-                    if insn_cycle == 4 {
-                        self.set_a_nz(self.a | self.data);
-                    }
-                    self.rd_zpg_ix(self.x)
-                }
-                0x16 => {
-                    // ASL zpg,X
-                    if insn_cycle == 5 {
-                        self.data = self.asl(self.data);
-                    }
-                    self.rmw_zpg_x()
-                }
-                0x18 => {
-                    // CLC
-                    self.flags &= !0x01;
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0x19 => {
-                    // ORA abs,Y
-                    let (active, next) = self.rd_abs_ix(self.y);
-                    if active {
-                        self.set_a_nz(self.a | self.data);
-                    }
-                    next
-                }
-                0x1d => {
-                    // ORA abs,X
-                    let (active, next) = self.rd_abs_ix(self.x);
-                    if active {
-                        self.set_a_nz(self.a | self.data);
-                    }
-                    next
-                }
-                0x1e => {
-                    // ASL abs,X
-                    if insn_cycle == 6 {
-                        self.data = self.asl(self.data);
-                    }
-                    self.rmw_abs_ix(self.x)
-                }
-                0x20 => {
-                    // JSR abs
-                    self.jsr()
-                }
-                0x21 => {
-                    // AND X,ind
-                    if insn_cycle == 6 {
-                        self.set_a_nz(self.a & self.data);
-                    }
-                    self.rd_x_ind()
-                }
-                0x24 => {
-                    // BIT zpg
-                    if insn_cycle == 3 {
-                        self.bit(self.data);
-                    }
-                    self.rd_zpg()
-                }
-                0x25 => {
-                    // AND zpg
-                    if insn_cycle == 3 {
-                        self.set_a_nz(self.a & self.data);
-                    }
-                    self.rd_zpg()
-                }
-                0x26 => {
-                    // ROL zpg
-                    if insn_cycle == 4 {
-                        self.data = self.rol(self.data);
-                    }
-                    self.rmw_zpg()
-                }
-                0x28 => {
-                    // PLP
-                    if insn_cycle == 4 {
-                        self.flags = self.data | 0x30;
-                    }
-                    self.pull()
-                }
-                0x29 => {
-                    // AND #
-                    self.set_a_nz(self.a & self.data);
-                    self.rd_imm()
-                }
-                0x2a => {
-                    // ROL A
-                    self.a = self.rol(self.a);
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0x2c => {
-                    // BIT abs
-                    if insn_cycle == 4 {
-                        self.bit(self.data);
-                    }
-                    self.rd_abs()
-                }
-                0x2d => {
-                    // AND abs
-                    if insn_cycle == 4 {
-                        self.set_a_nz(self.a & self.data);
-                    }
-                    self.rd_abs()
-                }
-                0x2e => {
-                    // ROL abs
-                    if insn_cycle == 5 {
-                        self.data = self.rol(self.data);
-                    }
-                    self.rmw_abs()
-                }
-                0x30 => {
-                    // BPL rel
-                    self.cond_branch((self.flags & 0x80) != 0)
-                }
-                0x31 => {
-                    // AND ind,Y
-                    let (active, next) = self.rd_ind_y();
-                    if active {
-                        self.set_a_nz(self.a & self.data);
-                    }
-                    next
-                }
-                0x35 => {
-                    // AND zpg,X
-                    if insn_cycle == 4 {
-                        self.set_a_nz(self.a & self.data);
-                    }
-                    self.rd_zpg_ix(self.x)
-                }
-                0x36 => {
-                    // ROL zpg,X
-                    if insn_cycle == 5 {
-                        self.data = self.rol(self.data);
-                    }
-                    self.rmw_zpg_x()
-                }
-                0x38 => {
-                    // SEC
-                    self.flags |= 0x01;
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0x39 => {
-                    // AND abs,Y
-                    let (active, next) = self.rd_abs_ix(self.y);
-                    if active {
-                        self.set_a_nz(self.a & self.data);
-                    }
-                    next
-                }
-                0x3d => {
-                    // AND abs,X
-                    let (active, next) = self.rd_abs_ix(self.x);
-                    if active {
-                        self.set_a_nz(self.a & self.data);
-                    }
-                    next
-                }
-                0x3e => {
-                    // ROL abs,X
-                    if insn_cycle == 6 {
-                        self.data = self.rol(self.data);
-                    }
-                    self.rmw_abs_ix(self.x)
-                }
-                0x40 => {
-                    // RTI
-                    self.rti()
-                }
-                0x41 => {
-                    // EOR X,ind
-                    if insn_cycle == 6 {
-                        self.set_a_nz(self.a ^ self.data);
-                    }
-                    self.rd_x_ind()
-                }
-                0x45 => {
-                    // EOR zpg
-                    if insn_cycle == 3 {
-                        self.set_a_nz(self.a ^ self.data);
-                    }
-                    self.rd_zpg()
-                }
-                0x46 => {
-                    // LSR zpg
-                    if insn_cycle == 4 {
-                        self.data = self.lsr(self.data);
-                    }
-                    self.rmw_zpg()
-                }
-                0x48 => {
-                    // PHA
-                    if insn_cycle == 2 {
-                        self.data = self.a
-                    }
-                    self.push()
-                }
-                0x49 => {
-                    // EOR #
-                    self.set_a_nz(self.a ^ self.data);
-                    self.rd_imm()
-                }
-                0x4a => {
-                    // LSR A
-                    self.a = self.lsr(self.a);
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0x4c => {
-                    // JMP abs
-                    self.jmp()
-                }
-                0x4d => {
-                    // EOR abs
-                    if insn_cycle == 4 {
-                        self.set_a_nz(self.a ^ self.data);
-                    }
-                    self.rd_abs()
-                }
-                0x4e => {
-                    // LSR abs
-                    if insn_cycle == 5 {
-                        self.data = self.lsr(self.data);
-                    }
-                    self.rmw_abs()
-                }
-                0x50 => {
-                    // BVC rel
-                    self.cond_branch((self.flags & 0x40) == 0)
-                }
-                0x51 => {
-                    // EOR ind,Y
-                    let (active, next) = self.rd_ind_y();
-                    if active {
-                        self.set_a_nz(self.a ^ self.data);
-                    }
-                    next
-                }
-                0x55 => {
-                    // EOR zpg,X
-                    if insn_cycle == 4 {
-                        self.set_a_nz(self.a ^ self.data);
-                    }
-                    self.rd_zpg_ix(self.x)
-                }
-                0x56 => {
-                    // LSR zpg,X
-                    if insn_cycle == 5 {
-                        self.data = self.lsr(self.data);
-                    }
-                    self.rmw_zpg_x()
-                }
-                0x58 => {
-                    // CLI
-                    self.flags &= !0x04;
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0x59 => {
-                    // EOR abs,Y
-                    let (active, next) = self.rd_abs_ix(self.y);
-                    if active {
-                        self.set_a_nz(self.a ^ self.data);
-                    }
-                    next
-                }
-                0x5d => {
-                    // EOR abs,X
-                    let (active, next) = self.rd_abs_ix(self.x);
-                    if active {
-                        self.set_a_nz(self.a ^ self.data);
-                    }
-                    next
-                }
-                0x5e => {
-                    // LSR abs,X
-                    if insn_cycle == 6 {
-                        self.data = self.lsr(self.data);
-                    }
-                    self.rmw_abs_ix(self.x)
-                }
-                0x60 => {
-                    // RTS
-                    self.rts()
-                }
-                0x61 => {
-                    // ADC X,ind
-                    if insn_cycle == 6 {
-                        self.adc(self.data);
-                    }
-                    self.rd_x_ind()
-                }
-                0x65 => {
-                    // ADC zpg
-                    if insn_cycle == 3 {
-                        self.adc(self.data);
-                    }
-                    self.rd_zpg()
-                }
-                0x66 => {
-                    // ROR zpg
-                    if insn_cycle == 4 {
-                        self.data = self.ror(self.data);
-                    }
-                    self.rmw_zpg()
-                }
-                0x68 => {
-                    // PLA
-                    if insn_cycle == 4 {
-                        self.set_a_nz(self.data);
-                    }
-                    self.pull()
-                }
-                0x69 => {
-                    // ADC #
-                    self.adc(self.data);
-                    self.rd_imm()
-                }
-                0x6a => {
-                    // ROR A
-                    self.a = self.ror(self.a);
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0x6c => self.jmp_ind(),
-                0x6d => {
-                    // ADC abs
-                    if insn_cycle == 5 {
-                        self.adc(self.data);
-                    }
-                    self.rmw_abs()
-                }
-                0x6e => {
-                    // ROR abs
-                    if insn_cycle == 5 {
-                        self.data = self.ror(self.data);
-                    }
-                    self.rmw_abs()
-                }
-                0x70 => {
-                    // BVS rel
-                    self.cond_branch((self.flags & 0x40) != 0)
-                }
-                0x71 => {
-                    // ADC ind,Y
-                    let (active, next) = self.rd_ind_y();
-                    if active {
-                        self.adc(self.data);
-                    }
-                    next
-                }
-                0x75 => {
-                    // ADC zpg,X
-                    if insn_cycle == 4 {
-                        self.adc(self.data);
-                    }
-                    self.rd_zpg_ix(self.x)
-                }
-                0x76 => {
-                    // ROR zpg,X
-                    if insn_cycle == 5 {
-                        self.data = self.ror(self.data);
-                    }
-                    self.rmw_zpg_x()
-                }
-                0x78 => {
-                    // SEI
-                    self.flags |= 0x04;
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0x79 => {
-                    // ADC abs,Y
-                    let (active, next) = self.rd_abs_ix(self.y);
-                    if active {
-                        self.adc(self.data);
-                    }
-                    next
-                }
-                0x7d => {
-                    // ADC abs,X
-                    let (active, next) = self.rd_abs_ix(self.x);
-                    if active {
-                        self.adc(self.data);
-                    }
-                    next
-                }
-                0x7e => {
-                    // ROR abs,X
-                    if insn_cycle == 6 {
-                        self.data = self.ror(self.data);
-                    }
-                    self.rmw_abs_ix(self.x)
-                }
-                0x81 => {
-                    // STA X,ind
-                    self.wr_x_ind(self.a)
-                }
-                0x84 => {
-                    // STY zpg
-                    self.wr_zpg(self.y)
-                }
-                0x85 => {
-                    // STA zpg
-                    self.wr_zpg(self.a)
-                }
-                0x86 => {
-                    // STX zpg
-                    self.wr_zpg(self.x)
-                }
-                0x88 => {
-                    // DEY
-                    let y = self.y.wrapping_sub(1);
-                    self.set_y_nz(y);
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0x8a => {
-                    // TXA
-                    self.set_a_nz(self.x);
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0x8c => {
-                    // STY abs
-                    self.wr_abs(self.y)
-                }
-                0x8d => {
-                    // STA abs
-                    self.wr_abs(self.a)
-                }
-                0x8e => {
-                    // STX abs
-                    self.wr_abs(self.x)
-                }
-                0x90 => {
-                    // BCC rel
-                    self.cond_branch((self.flags & 0x01) == 0)
-                }
-                0x91 => {
-                    // STA ind,Y
-                    if insn_cycle == 5 {
-                        self.data = self.a;
-                    }
-                    self.wr_ind_y()
-                }
-                0x94 => {
-                    // STY zpg,X
-                    if insn_cycle == 3 {
-                        self.data = self.y;
-                    }
-                    self.wr_zpg_ix(self.x)
-                }
-                0x95 => {
-                    // STA zpg,X
-                    if insn_cycle == 3 {
-                        self.data = self.a;
-                    }
-                    self.wr_zpg_ix(self.x)
-                }
-                0x96 => {
-                    // STX zpg,Y
-                    if insn_cycle == 3 {
-                        self.data = self.x;
-                    }
-                    self.wr_zpg_ix(self.y)
-                }
-                0x98 => {
-                    // TYA
-                    self.set_a_nz(self.y);
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0x99 => {
-                    // STA abs,Y
-                    if insn_cycle == 4 {
-                        self.data = self.a;
-                    }
-                    self.wr_abs_ix(self.y)
-                }
-                0x9a => {
-                    // TXS
-                    self.sp = self.x;
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0x9d => {
-                    // STA abs,X
-                    if insn_cycle == 4 {
-                        self.data = self.a;
-                    }
-                    self.wr_abs_ix(self.x)
-                }
-                0xa0 => {
-                    // LDY #
-                    self.set_y_nz(self.data);
-                    self.rd_imm()
-                }
-                0xa1 => {
-                    // LOAD X,ind
-                    if insn_cycle == 6 {
-                        self.set_a_nz(self.data);
-                    }
-                    self.rd_x_ind()
-                }
-                0xa2 => {
-                    // LDX #
-                    self.set_x_nz(self.data);
-                    self.rd_imm()
-                }
-                0xa4 => {
-                    // LDY zpg
-                    if insn_cycle == 3 {
-                        self.set_y_nz(self.data);
-                    }
-                    self.rd_zpg()
-                }
-                0xa5 => {
-                    // LDA zpg
-                    if insn_cycle == 3 {
-                        self.set_a_nz(self.data);
-                    }
-                    self.rd_zpg()
-                }
-                0xa6 => {
-                    // LDX zpg
-                    if insn_cycle == 3 {
-                        self.set_x_nz(self.data);
-                    }
-                    self.rd_zpg()
-                }
-                0xa8 => {
-                    // TAY
-                    self.set_y_nz(self.a);
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0xa9 => {
-                    // LDA #
-                    self.set_a_nz(self.data);
-                    self.rd_imm()
-                }
-                0xaa => {
-                    // TAX
-                    self.set_x_nz(self.a);
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0xac => {
-                    // LDY abs
-                    if insn_cycle == 4 {
-                        self.set_y_nz(self.data);
-                    }
-                    self.rd_abs()
-                }
-                0xad => {
-                    // LDA abs
-                    if insn_cycle == 4 {
-                        self.set_a_nz(self.data);
-                    }
-                    self.rd_abs()
-                }
-                0xae => {
-                    // LDX abs
-                    if insn_cycle == 4 {
-                        self.set_x_nz(self.data);
-                    }
-                    self.rd_abs()
-                }
-                0xb0 => {
-                    // BCS rel
-                    self.cond_branch((self.flags & 0x01) != 0)
-                }
-                0xb1 => {
-                    // LDA ind,Y
-                    let (active, next) = self.rd_ind_y();
-                    if active {
-                        self.set_a_nz(self.data);
-                    }
-                    next
-                }
-                0xb4 => {
-                    // LDY zpg,X
-                    if insn_cycle == 4 {
-                        self.set_y_nz(self.data);
-                    }
-                    self.rd_zpg_ix(self.x)
-                }
-                0xb5 => {
-                    // LDA zpg,X
-                    if insn_cycle == 4 {
-                        self.set_a_nz(self.data);
-                    }
-                    self.rd_zpg_ix(self.x)
-                }
-                0xb6 => {
-                    // LDX zpg,Y
-                    if insn_cycle == 4 {
-                        self.set_x_nz(self.data);
-                    }
-                    self.rd_zpg_ix(self.y)
-                }
-                0xb8 => {
-                    // CLV
-                    self.flags &= !0x40;
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0xb9 => {
-                    // LDA abs,Y
-                    let (active, next) = self.rd_abs_ix(self.y);
-                    if active {
-                        self.set_a_nz(self.data);
-                    }
-                    next
-                }
-                0xba => {
-                    // TSX
-                    self.set_x_nz(self.sp);
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0xbc => {
-                    // LDY abs,X
-                    let (active, next) = self.rd_abs_ix(self.x);
-                    if active {
-                        self.set_y_nz(self.data);
-                    }
-                    next
-                }
-                0xbd => {
-                    // LDA abs,X
-                    let (active, next) = self.rd_abs_ix(self.x);
-                    if active {
-                        self.set_a_nz(self.data);
-                    }
-                    next
-                }
-                0xbe => {
-                    // LDX abs,Y
-                    let (active, next) = self.rd_abs_ix(self.y);
-                    if active {
-                        self.set_x_nz(self.data);
-                    }
-                    next
-                }
-                0xc0 => {
-                    // CPY #
-                    self.cmp(self.y, self.data);
-                    self.rd_imm()
-                }
-                0xc1 => {
-                    // CMP X,ind
-                    if insn_cycle == 6 {
-                        self.cmp(self.a, self.data);
-                    }
-                    self.rd_x_ind()
-                }
-                0xc4 => {
-                    // CPY zpg
-                    if insn_cycle == 3 {
-                        self.cmp(self.y, self.data);
-                    }
-                    self.rd_zpg()
-                }
-                0xc5 => {
-                    // CMP zpg
-                    if insn_cycle == 3 {
-                        self.cmp(self.a, self.data);
-                    }
-                    self.rd_zpg()
-                }
-                0xc6 => {
-                    // DEC zpg
-                    if insn_cycle == 4 {
-                        let val = self.data.wrapping_sub(1);
-                        self.data = val;
-                        self.set_nz(val);
-                    }
-                    self.rmw_zpg()
-                }
-                0xc8 => {
-                    // INY
-                    let y = self.y.wrapping_add(1);
-                    self.set_y_nz(y);
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0xc9 => {
-                    // CMP #
-                    self.cmp(self.a, self.data);
-                    self.rd_imm()
-                }
-                0xca => {
-                    // DEX
-                    let x = self.x.wrapping_sub(1);
-                    self.set_x_nz(x);
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0xcc => {
-                    // CPY abs
-                    if insn_cycle == 4 {
-                        self.cmp(self.y, self.data);
-                    }
-                    self.rd_abs()
-                }
-                0xcd => {
-                    // CMP abs
-                    if insn_cycle == 4 {
-                        self.cmp(self.a, self.data);
-                    }
-                    self.rd_abs()
-                }
-                0xce => {
-                    // DEC abs
-                    if insn_cycle == 5 {
-                        let val = self.data.wrapping_sub(1);
-                        self.data = val;
-                        self.set_nz(val);
-                    }
-                    self.rmw_abs()
-                }
-                0xd0 => {
-                    // BNE rel
-                    self.cond_branch((self.flags & 0x02) == 0)
-                }
-                0xd1 => {
-                    // CMP ind,Y
-                    let (active, next) = self.rd_ind_y();
-                    if active {
-                        self.cmp(self.a, self.data);
-                    }
-                    next
-                }
-                0xd5 => {
-                    // CMP zpg,X
-                    if insn_cycle == 4 {
-                        self.cmp(self.a, self.data);
-                    }
-                    self.rd_zpg_ix(self.x)
-                }
-                0xd6 => {
-                    // DEC zpg,X
-                    if insn_cycle == 5 {
-                        let val = self.data.wrapping_sub(1);
-                        self.data = val;
-                        self.set_nz(val);
-                    }
-                    self.rmw_zpg_x()
-                }
-                0xd8 => {
-                    // CLD
-                    self.flags &= !0x08;
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0xd9 => {
-                    // CMP abs,Y
-                    let (active, next) = self.rd_abs_ix(self.y);
-                    if active {
-                        self.cmp(self.a, self.data);
-                    }
-                    next
-                }
-                0xdd => {
-                    // CMP abs,X
-                    let (active, next) = self.rd_abs_ix(self.x);
-                    if active {
-                        self.cmp(self.a, self.data);
-                    }
-                    next
-                }
-                0xde => {
-                    // DEC abs,X
-                    if insn_cycle == 6 {
-                        let val = self.data.wrapping_sub(1);
-                        self.data = val;
-                        self.set_nz(val);
-                    }
-                    self.rmw_abs_ix(self.x)
-                }
-                0xe0 => {
-                    // CPX #
-                    self.cmp(self.x, self.data);
-                    self.rd_imm()
-                }
-                0xe1 => {
-                    // SBC X,ind
-                    if insn_cycle == 6 {
-                        self.sbc(self.data);
-                    }
-                    self.rd_x_ind()
-                }
-                0xe4 => {
-                    // CPX zpg
-                    if insn_cycle == 3 {
-                        self.cmp(self.x, self.data);
-                    }
-                    self.rd_zpg()
-                }
-                0xe5 => {
-                    // SBC zpg
-                    if insn_cycle == 3 {
-                        self.sbc(self.data);
-                    }
-                    self.rd_zpg()
-                }
-                0xe6 => {
-                    // INC zpg
-                    if insn_cycle == 4 {
-                        let val = self.data.wrapping_add(1);
-                        self.data = val;
-                        self.set_nz(val);
-                    }
-                    self.rmw_zpg()
-                }
-                0xe8 => {
-                    // INX
-                    self.set_x_nz(self.x.wrapping_add(1));
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0xe9 => {
-                    // SBC #
-                    self.sbc(self.data);
-                    self.rd_imm()
-                }
-                0xea => {
-                    // NOP
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0xec => {
-                    // CPX abs
-                    if insn_cycle == 4 {
-                        self.cmp(self.x, self.data);
-                    }
-                    self.rd_abs()
-                }
-                0xed => {
-                    // SBC abs
-                    if insn_cycle == 5 {
-                        self.sbc(self.data);
-                    }
-                    self.rmw_abs()
-                }
-                0xee => {
-                    // INC abs
-                    if insn_cycle == 5 {
-                        let val = self.data.wrapping_add(1);
-                        self.data = val;
-                        self.set_nz(val);
-                    }
-                    self.rmw_abs()
-                }
-                0xf0 => {
-                    // BEQ rel
-                    self.cond_branch((self.flags & 0x02) != 0)
-                }
-                0xf1 => {
-                    // SBC ind,Y
-                    let (active, next) = self.rd_ind_y();
-                    if active {
-                        self.sbc(self.data);
-                    }
-                    next
-                }
-                0xf5 => {
-                    // SBC zpg,X
-                    if insn_cycle == 4 {
-                        self.sbc(self.data);
-                    }
-                    self.rd_zpg_ix(self.x)
-                }
-                0xf6 => {
-                    // INC zpg,X
-                    if insn_cycle == 5 {
-                        let val = self.data.wrapping_add(1);
-                        self.data = val;
-                        self.set_nz(val);
-                    }
-                    self.rmw_zpg_x()
-                }
-                0xf8 => {
-                    // SED
-                    self.flags |= 0x08;
-                    self.insn_cycle = 0;
-                    (self.pc, false)
-                }
-                0xf9 => {
-                    // SBC abs,Y
-                    let (active, next) = self.rd_abs_ix(self.y);
-                    if active {
-                        self.sbc(self.data);
-                    }
-                    next
-                }
-                0xfd => {
-                    // SBC abs,X
-                    let (active, next) = self.rd_abs_ix(self.x);
-                    if active {
-                        self.sbc(self.data);
-                    }
-                    next
-                }
-                0xfe => {
-                    // INC abs,X
-                    if insn_cycle == 6 {
-                        let val = self.data.wrapping_add(1);
-                        self.data = val;
-                        self.set_nz(val);
-                    }
-                    self.rmw_abs_ix(self.x)
-                }
-                _ => panic!("unhandled insn {:x}", self.insn),
-            };
-            self.addr = addr;
-            self.is_write = is_write;
-        }
-    }
-
-    fn rd_x_ind(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.ptr = self.data;
-            (self.ptr as u16, false)
-        } else if self.insn_cycle == 3 {
-            self.ptr = self.ptr.wrapping_add(self.x);
-            (self.ptr as u16, false)
-        } else if self.insn_cycle == 4 {
-            self.lo = self.data;
-            let addr = self.ptr.wrapping_add(1);
-            (addr as u16, false)
-        } else if self.insn_cycle == 5 {
-            let addr = ((self.data as u16) << 8) | (self.lo as u16);
-            (addr, false)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn wr_x_ind(&mut self, val: u8) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.ptr = self.data;
-            (self.ptr as u16, false)
-        } else if self.insn_cycle == 3 {
-            self.ptr = self.ptr.wrapping_add(self.x);
-            (self.ptr as u16, false)
-        } else if self.insn_cycle == 4 {
-            self.lo = self.data;
-            let addr = self.ptr.wrapping_add(1);
-            (addr as u16, false)
-        } else if self.insn_cycle == 5 {
-            let addr = ((self.data as u16) << 8) | (self.lo as u16);
-            self.data = val;
-            (addr, true)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn rd_zpg(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            (self.data as u16, false)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn wr_zpg(&mut self, val: u8) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            let addr = self.data as u16;
-            self.data = val;
-            (addr, true)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn rd_zpg_ix(&mut self, ix: u8) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.ptr = self.data;
-            (self.ptr as u16, false)
-        } else if self.insn_cycle == 3 {
-            let addr = self.ptr.wrapping_add(ix);
-            (addr as u16, false)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn wr_zpg_ix(&mut self, ix: u8) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.ptr = self.data;
-            (self.ptr as u16, false)
-        } else if self.insn_cycle == 3 {
-            let addr = self.ptr.wrapping_add(ix);
-            (addr as u16, true)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn rd_abs(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.lo = self.data;
-            (self.pc as u16, false)
-        } else if self.insn_cycle == 3 {
-            self.pc = self.pc.wrapping_add(1);
-            let addr = ((self.data as u16) << 8) | (self.lo as u16);
-            (addr, false)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn wr_abs(&mut self, val: u8) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.lo = self.data;
-            (self.pc as u16, false)
-        } else if self.insn_cycle == 3 {
-            self.pc = self.pc.wrapping_add(1);
-            let addr = ((self.data as u16) << 8) | (self.lo as u16);
-            self.data = val;
-            (addr, true)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn rd_abs_ix(&mut self, ix: u8) -> (bool, (u16, bool)) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.lo = self.data;
-            (false, (self.pc, false))
-        } else if self.insn_cycle == 3 {
-            self.pc = self.pc.wrapping_add(1);
-            let lo = self.lo.wrapping_add(ix);
-            let addr = ((self.data as u16) << 8) | (lo as u16);
-            (false, (addr, false))
-        } else if self.insn_cycle == 4 {
-            if self.lo.overflowing_add(ix).1 {
-                let addr = self.addr.wrapping_add(0x100);
-                (false, (addr, false))
-            } else {
-                self.insn_cycle = 0;
-                (true, (self.pc, false))
-            }
-        } else {
-            self.insn_cycle = 0;
-            (true, (self.pc, false))
-        }
-    }
-
-    fn wr_abs_ix(&mut self, ix: u8) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.lo = self.data;
-            (self.pc, false)
-        } else if self.insn_cycle == 3 {
-            self.pc = self.pc.wrapping_add(1);
-            let lo = self.lo.wrapping_add(ix);
-            let addr = ((self.data as u16) << 8) | (lo as u16);
-            (addr, false)
-        } else if self.insn_cycle == 4 {
-            if self.lo.overflowing_add(ix).1 {
-                self.addr = self.addr.wrapping_add(0x100);
-            }
-            (self.addr, true)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn rd_ind_y(&mut self) -> (bool, (u16, bool)) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.ptr = self.data;
-            (false, (self.ptr as u16, false))
-        } else if self.insn_cycle == 3 {
-            self.lo = self.data;
-            (false, (self.ptr.wrapping_add(1) as u16, false))
-        } else if self.insn_cycle == 4 {
-            let lo = self.lo.wrapping_add(self.y);
-            let addr = ((self.data as u16) << 8) | (lo as u16);
-            (false, (addr, false))
-        } else if self.insn_cycle == 5 {
-            if self.lo.overflowing_add(self.y).1 {
-                let addr = self.addr.wrapping_add(0x100);
-                (false, (addr, false))
-            } else {
-                self.insn_cycle = 0;
-                (true, (self.pc, false))
-            }
-        } else {
-            self.insn_cycle = 0;
-            (true, (self.pc, false))
-        }
-    }
-
-    fn wr_ind_y(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.ptr = self.data;
-            (self.ptr as u16, false)
-        } else if self.insn_cycle == 3 {
-            self.lo = self.data;
-            (self.ptr.wrapping_add(1) as u16, false)
-        } else if self.insn_cycle == 4 {
-            let lo = self.lo.wrapping_add(self.y);
-            let addr = ((self.data as u16) << 8) | (lo as u16);
-            (addr, false)
-        } else if self.insn_cycle == 5 {
-            if self.lo.overflowing_add(self.y).1 {
-                self.addr = self.addr.wrapping_add(0x100);
-            }
-            (self.addr, true)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn rmw_abs(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.lo = self.data;
-            (self.pc as u16, false)
-        } else if self.insn_cycle == 3 {
-            self.pc = self.pc.wrapping_add(1);
-            let addr = ((self.data as u16) << 8) | (self.lo as u16);
-            (addr, false)
-        } else if self.insn_cycle == 4 {
-            (self.addr, true)
-        } else if self.insn_cycle == 5 {
-            (self.addr, true)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn rmw_abs_ix(&mut self, ix: u8) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.lo = self.data;
-            (self.pc as u16, false)
-        } else if self.insn_cycle == 3 {
-            self.pc = self.pc.wrapping_add(1);
-            let lo = self.lo.wrapping_add(ix);
-            let addr = ((self.data as u16) << 8) | (lo as u16);
-            (addr, false)
-        } else if self.insn_cycle == 4 {
-            if self.lo.overflowing_add(ix).1 {
-                self.addr = self.addr.wrapping_add(0x100);
-            }
-            (self.addr, false)
-        } else if self.insn_cycle == 5 {
-            (self.addr, true)
-        } else if self.insn_cycle == 6 {
-            (self.addr, true)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn rmw_zpg(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.ptr = self.data;
-            (self.ptr as u16, false)
-        } else if self.insn_cycle == 3 {
-            (self.ptr as u16, true)
-        } else if self.insn_cycle == 4 {
-            (self.ptr as u16, true)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn rmw_zpg_x(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.ptr = self.data;
-            (self.ptr as u16, false)
-        } else if self.insn_cycle == 3 {
-            let addr = self.ptr.wrapping_add(self.x);
-            (addr as u16, false)
-        } else if self.insn_cycle == 4 {
-            (self.addr as u16, true)
-        } else if self.insn_cycle == 5 {
-            (self.addr as u16, true)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn rd_imm(&mut self) -> (u16, bool) {
-        self.pc = self.pc.wrapping_add(1);
-        self.insn_cycle = 0;
-        (self.pc, false)
-    }
-
-    fn push(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            let addr = 0x100 | (self.sp as u16);
-            self.sp = self.sp.wrapping_sub(1);
-            (addr, true)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn pull(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            let addr = 0x100 | (self.sp as u16);
-            self.sp = self.sp.wrapping_add(1);
-            (addr, false)
-        } else if self.insn_cycle == 3 {
-            let addr = 0x100 | (self.sp as u16);
-            (addr, false)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn cond_branch(&mut self, cond: bool) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            if cond {
-                self.lo = self.data;
-            } else {
-                self.insn_cycle = 0;
-            }
-            (self.pc, false)
-        } else if self.insn_cycle == 3 {
-            let new_pc = self.pc.wrapping_add(self.lo as i8 as u16);
-            let nocarry_pc = (self.pc & 0xff00) | (new_pc & 0xff);
-            self.pc = new_pc;
-            if new_pc == nocarry_pc {
-                self.insn_cycle = 0;
-            }
-            (nocarry_pc, false)
-        } else {
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn jmp(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.lo = self.data;
-            (self.pc, false)
-        } else {
-            self.pc = ((self.data as u16) << 8) | (self.lo as u16);
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn jmp_ind(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.lo = self.data;
-            (self.pc, false)
-        } else if self.insn_cycle == 3 {
-            let addr = ((self.data as u16) << 8) | (self.lo as u16);
-            (addr, false)
-        } else if self.insn_cycle == 4 {
-            self.lo = self.data;
-            // 64doc says this only wraps lo byte
-            let addr = self.addr.wrapping_add(1);
-            (addr, false)
-        } else {
-            self.pc = ((self.data as u16) << 8) | (self.lo as u16);
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn jsr(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.lo = self.data;
-            let addr = 0x100 | (self.sp as u16);
-            (addr, false)
-        } else if self.insn_cycle == 3 {
-            self.data = (self.pc >> 8) as u8;
-            self.sp = self.sp.wrapping_sub(1);
-            (self.addr, true)
-        } else if self.insn_cycle == 4 {
-            self.data = self.pc as u8;
-            let addr = 0x100 | (self.sp as u16);
-            self.sp = self.sp.wrapping_sub(1);
-            (addr, true)
-        } else if self.insn_cycle == 5 {
-            (self.pc, false)
-        } else {
-            self.pc = ((self.data as u16) << 8) | (self.lo as u16);
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn rts(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            let addr = 0x100 | (self.sp as u16);
-            self.sp = self.sp.wrapping_add(1);
-            (addr, false)
-        } else if self.insn_cycle == 3 {
-            let addr = 0x100 | (self.sp as u16);
-            self.sp = self.sp.wrapping_add(1);
-            (addr, false)
-        } else if self.insn_cycle == 4 {
-            self.lo = self.data;
-            let addr = 0x100 | (self.sp as u16);
-            (addr, false)
-        } else if self.insn_cycle == 5 {
-            self.pc = ((self.data as u16) << 8) | (self.lo as u16);
-            (self.pc, false)
-        } else {
-            self.pc = self.pc.wrapping_add(1);
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn rti(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            let addr = 0x100 | (self.sp as u16);
-            self.sp = self.sp.wrapping_add(1);
-            (addr, false)
-        } else if self.insn_cycle == 3 {
-            let addr = 0x100 | (self.sp as u16);
-            self.sp = self.sp.wrapping_add(1);
-            (addr, false)
-        } else if self.insn_cycle == 4 {
-            self.flags = self.data;
-            let addr = 0x100 | (self.sp as u16);
-            self.sp = self.sp.wrapping_add(1);
-            (addr, false)
-        } else if self.insn_cycle == 5 {
-            self.lo = self.data;
-            let addr = 0x100 | (self.sp as u16);
-            (addr, false)
-        } else {
-            self.pc = ((self.data as u16) << 8) | (self.lo as u16);
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
-    fn brk(&mut self) -> (u16, bool) {
-        if self.insn_cycle == 2 {
-            self.pc = self.pc.wrapping_add(1);
-            self.data = (self.pc >> 8) as u8;
-            let addr = 0x100 | (self.sp as u16);
-            self.sp = self.sp.wrapping_sub(1);
-            (addr, true)
-        } else if self.insn_cycle == 3 {
-            self.data = self.pc as u8;
-            let addr = 0x100 | (self.sp as u16);
-            self.sp = self.sp.wrapping_sub(1);
-            (addr, true)
-        } else if self.insn_cycle == 4 {
-            self.data = self.flags;
-            let addr = 0x100 | (self.sp as u16);
-            self.sp = self.sp.wrapping_sub(1);
-            (addr, true)
-        } else if self.insn_cycle == 5 {
-            (0xfffe, false)
-        } else if self.insn_cycle == 6 {
-            self.lo = self.data;
-            (0xffff, false)
-        } else {
-            self.pc = ((self.data as u16) << 8) | (self.lo as u16);
-            self.flags |= 0x04;
-            self.insn_cycle = 0;
-            (self.pc, false)
-        }
-    }
-
     pub fn cpu_clk_ucode(&mut self) {
         let insn_cycle = self.insn_cycle;
         self.insn_cycle += 1;
@@ -2164,11 +686,6 @@ impl Cpu {
             }
             Clv => {
                 self.flags &= !0x40;
-                self.insn_cycle = 0;
-                (self.pc, false)
-            }
-            Sev => {
-                self.flags |= 0x40;
                 self.insn_cycle = 0;
                 (self.pc, false)
             }
@@ -2298,9 +815,7 @@ impl Cpu {
                 self.insn_cycle = 0;
                 (self.pc, false)
             }
-            Rmw2 => {
-                (self.addr, true)
-            }
+            Rmw2 => (self.addr, true),
             AslMem => {
                 self.data = self.asl(self.data);
                 (self.addr, true)
@@ -2337,11 +852,11 @@ impl Cpu {
             Abs2 => {
                 self.pc = self.pc.wrapping_add(1);
                 let addr = ((self.data as u16) << 8) | (self.lo as u16);
-                (addr, false)     
+                (addr, false)
             }
             Zpg => {
                 self.pc = self.pc.wrapping_add(1);
-                (self.data as u16, false)    
+                (self.data as u16, false)
             }
             AbsX => {
                 self.pc = self.pc.wrapping_add(1);
@@ -2470,7 +985,7 @@ impl Cpu {
                 let lo = self.lo.wrapping_add(self.y);
                 self.ptr = self.y;
                 let addr = ((self.data as u16) << 8) | (lo as u16);
-                (addr, false)    
+                (addr, false)
             }
             XInd2 => {
                 let addr = (self.addr as u8).wrapping_add(self.x) as u16;
@@ -2478,7 +993,7 @@ impl Cpu {
             }
             XInd4 => {
                 let addr = ((self.data as u16) << 8) | (self.lo as u16);
-                (addr, false)     
+                (addr, false)
             }
             StaAbsIx => {
                 if self.lo.overflowing_add(self.ptr).1 {
@@ -2492,25 +1007,25 @@ impl Cpu {
                 // increment lo byte only; no carry
                 let lo = (self.addr as u8).wrapping_add(1);
                 let addr = (self.addr & 0xff00) | lo as u16;
-                (addr, false)    
+                (addr, false)
             }
             StaZpg => {
                 self.pc = self.pc.wrapping_add(1);
                 let addr = self.data as u16;
                 self.data = self.a;
-                (addr, true)    
+                (addr, true)
             }
             StxZpg => {
                 self.pc = self.pc.wrapping_add(1);
                 let addr = self.data as u16;
                 self.data = self.x;
-                (addr, true)    
+                (addr, true)
             }
             StyZpg => {
                 self.pc = self.pc.wrapping_add(1);
                 let addr = self.data as u16;
                 self.data = self.y;
-                (addr, true)    
+                (addr, true)
             }
             StaZpgX => {
                 self.data = self.a;
@@ -2531,19 +1046,19 @@ impl Cpu {
                 self.pc = self.pc.wrapping_add(1);
                 let addr = ((self.data as u16) << 8) | (self.lo as u16);
                 self.data = self.a;
-                (addr, true)    
+                (addr, true)
             }
             StxAbs => {
                 self.pc = self.pc.wrapping_add(1);
                 let addr = ((self.data as u16) << 8) | (self.lo as u16);
                 self.data = self.x;
-                (addr, true)    
+                (addr, true)
             }
             StyAbs => {
                 self.pc = self.pc.wrapping_add(1);
                 let addr = ((self.data as u16) << 8) | (self.lo as u16);
                 self.data = self.y;
-                (addr, true)    
+                (addr, true)
             }
             StaXInd => {
                 let addr = ((self.data as u16) << 8) | (self.lo as u16);
@@ -2583,32 +1098,16 @@ impl Cpu {
             Jmp => {
                 self.pc = ((self.data as u16) << 8) | (self.lo as u16);
                 self.insn_cycle = 0;
-                (self.pc, false)    
+                (self.pc, false)
             }
-            Bpl => {
-                self.cond_branch2((self.flags & 0x80) == 0)
-            }
-            Bmi => {
-                self.cond_branch2((self.flags & 0x80) != 0)
-            }
-            Bvc => {
-                self.cond_branch2((self.flags & 0x40) == 0)
-            }
-            Bvs => {
-                self.cond_branch2((self.flags & 0x40) != 0)
-            }
-            Bcc => {
-                self.cond_branch2((self.flags & 0x01) == 0)
-            }
-            Bcs => {
-                self.cond_branch2((self.flags & 0x01) != 0)
-            }
-            Bne => {
-                self.cond_branch2((self.flags & 0x02) == 0)
-            }
-            Beq => {
-                self.cond_branch2((self.flags & 0x02) != 0)
-            }
+            Bpl => self.cond_branch((self.flags & 0x80) == 0),
+            Bmi => self.cond_branch((self.flags & 0x80) != 0),
+            Bvc => self.cond_branch((self.flags & 0x40) == 0),
+            Bvs => self.cond_branch((self.flags & 0x40) != 0),
+            Bcc => self.cond_branch((self.flags & 0x01) == 0),
+            Bcs => self.cond_branch((self.flags & 0x01) != 0),
+            Bne => self.cond_branch((self.flags & 0x02) == 0),
+            Beq => self.cond_branch((self.flags & 0x02) != 0),
             CondBr => {
                 let new_pc = self.pc.wrapping_add(self.lo as i8 as u16);
                 let nocarry_pc = (self.pc & 0xff00) | (new_pc & 0xff);
@@ -2677,17 +1176,15 @@ impl Cpu {
             Jsr2 => {
                 self.data = (self.pc >> 8) as u8;
                 self.sp = self.sp.wrapping_sub(1);
-                (self.addr, true)    
+                (self.addr, true)
             }
             Jsr3 => {
                 self.data = self.pc as u8;
                 let addr = 0x100 | (self.sp as u16);
                 self.sp = self.sp.wrapping_sub(1);
-                (addr, true)        
+                (addr, true)
             }
-            Jsr4 => {
-                (self.pc, false)
-            }
+            Jsr4 => (self.pc, false),
             Rts3 => {
                 self.lo = self.data;
                 let addr = 0x100 | (self.sp as u16);
@@ -2695,7 +1192,7 @@ impl Cpu {
             }
             Rts4 => {
                 self.pc = ((self.data as u16) << 8) | (self.lo as u16);
-                (self.pc, false)    
+                (self.pc, false)
             }
             Rts5 => {
                 self.pc = self.pc.wrapping_add(1);
@@ -2706,24 +1203,22 @@ impl Cpu {
                 self.flags = self.data;
                 let addr = 0x100 | (self.sp as u16);
                 self.sp = self.sp.wrapping_add(1);
-                (addr, false)    
+                (addr, false)
             }
             Brk1 => {
                 self.pc = self.pc.wrapping_add(1);
                 self.data = (self.pc >> 8) as u8;
                 let addr = 0x100 | (self.sp as u16);
                 self.sp = self.sp.wrapping_sub(1);
-                (addr, true)    
+                (addr, true)
             }
             Brk3 => {
                 self.data = self.flags;
                 let addr = 0x100 | (self.sp as u16);
                 self.sp = self.sp.wrapping_sub(1);
-                (addr, true)       
+                (addr, true)
             }
-            Brk4 => {
-                (0xfffe, false)
-            }
+            Brk4 => (0xfffe, false),
             Brk5 => {
                 self.lo = self.data;
                 (0xffff, false)
@@ -2732,7 +1227,7 @@ impl Cpu {
                 self.pc = ((self.data as u16) << 8) | (self.lo as u16);
                 self.flags |= 0x04;
                 self.insn_cycle = 0;
-                (self.pc, false)    
+                (self.pc, false)
             }
             _ => panic!("not yet implemented"),
         };
@@ -2740,7 +1235,7 @@ impl Cpu {
         self.is_write = is_write
     }
 
-    fn cond_branch2(&mut self, cond: bool) -> (u16, bool) {
+    fn cond_branch(&mut self, cond: bool) -> (u16, bool) {
         self.pc = self.pc.wrapping_add(1);
         if cond {
             self.lo = self.data;
@@ -2748,6 +1243,5 @@ impl Cpu {
             self.insn_cycle = 0;
         }
         (self.pc, false)
-
     }
 }
