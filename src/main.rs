@@ -5,18 +5,20 @@ use std::io::Read;
 mod cpu;
 use cpu::{Bus, Cpu};
 
-struct DebugBus;
+struct DebugBus {
+    mem: [u8; 65536],
+}
 
 impl Bus for DebugBus {
-    fn read(&mut self, addr: u16, cpu: &mut Cpu) -> u8 {
-        let val = cpu.mem[addr as usize];
+    fn read(&mut self, addr: u16) -> u8 {
+        let val = self.mem[addr as usize];
         println!("rd {:04x} {:02x}", addr, val);
         val
     }
 
-    fn write(&mut self, addr: u16, val: u8, cpu: &mut Cpu) {
+    fn write(&mut self, addr: u16, val: u8) {
         println!("wr {:04x} {:02x}", addr, val);
-        cpu.mem[addr as usize] = val;
+        self.mem[addr as usize] = val;
     }
 }
 
@@ -31,11 +33,12 @@ fn main() {
     f.read_to_end(&mut bin).expect("read error");
     println!("size = {}", bin.len());
     let mut cpu = Cpu::new();
-    cpu.mem.copy_from_slice(&bin);
+    let mut debug_bus = DebugBus {
+        mem: [0; 65536],
+    };
+    debug_bus.mem.copy_from_slice(&bin);
     cpu.pc = 0x400;
     cpu.addr = 0x400;
-    cpu.set_masks(!0, !0);
-    let mut debug_bus = DebugBus;
     let mut last_insn_addr = 0;
     loop {
         cpu.do_bus(&mut debug_bus);

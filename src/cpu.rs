@@ -16,11 +16,7 @@ pub struct Cpu {
     pub ptr: u8,
 
     // Other processor state
-    pub mem: [u8; 65536],
     pub cycle: usize,
-
-    rd_mask: u64,
-    wr_mask: u64,
 }
 
 #[repr(u8)]
@@ -448,9 +444,9 @@ const UCODE: [[UcodeStep; 8]; 256] = [
 ];
 
 pub trait Bus {
-    fn read(&mut self, addr: u16, cpu: &mut Cpu) -> u8;
+    fn read(&mut self, addr: u16) -> u8;
 
-    fn write(&mut self, addr: u16, val: u8, cpu: &mut Cpu);
+    fn write(&mut self, addr: u16, val: u8);
 }
 
 impl Cpu {
@@ -470,16 +466,8 @@ impl Cpu {
             lo: 0,
             ptr: 0,
 
-            mem: [0; 65536],
             cycle: 0,
-            rd_mask: 0,
-            wr_mask: 0,
         }
-    }
-
-    pub fn set_masks(&mut self, rd_mask: u64, wr_mask: u64) {
-        self.rd_mask = rd_mask;
-        self.wr_mask = wr_mask;
     }
 
     pub fn print_state(&self) {
@@ -613,9 +601,9 @@ impl Cpu {
     // an adapter, which is probably going away
     pub fn do_bus(&mut self, bus: &mut dyn Bus) {
         if self.is_write {
-            bus.write(self.addr, self.data, self);
+            bus.write(self.addr, self.data);
         } else {
-            self.data = bus.read(self.addr, self);
+            self.data = bus.read(self.addr);
         }
     }
 

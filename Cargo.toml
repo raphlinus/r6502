@@ -3,5 +3,11 @@ name = "r6502"
 version = "0.1.0"
 authors = ["Raph Levien <raph.levien@gmail.com>"]
 edition = "2021"
+description = "A cycle-accurate emulator for the 6502 microprocessor"
+license = "MIT OR Apache-2.0"
+keywords = ["6502", "emulator"]
+categories = ["emulators"]
+readme = "README.md"
+repository = "https://github.com/raphlinus/r6502"
 
 [dependencies]
